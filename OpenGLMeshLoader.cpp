@@ -154,17 +154,6 @@ public:
 		center = eye + view;
 	}
 
-	void rotateYTP(float a)
-	{
-		// Rotate the distance vector around the global Y-axis by angle 'a'
-		float oldX = eye.x - center.x;
-		float oldZ = eye.z - center.z;
-		float newX = cos(DEG2RAD(a)) * oldX - sin(DEG2RAD(a)) * oldZ;
-		float newZ = sin(DEG2RAD(a)) * oldX + cos(DEG2RAD(a)) * oldZ;
-		eye.x = newX + center.x;
-		eye.z = newZ + center.z;
-	}
-
 	void rotateZ(float a)
 	{
 		Vector3f right = up.cross(center - eye).unit();
@@ -252,7 +241,14 @@ Model_3DS model_statue;
 Camera explorerCameraFP = Camera(5.00365, 2, 1.55072,
 	4.95831, 1.80926, 2.64968,
 	0, 1, 0);
-Camera explorerCameraTP = Camera(5.02084, 2.89375, -0.585861, 5.01413, 2.42989, 0.300026, 0, 1, 0);
+Camera explorerCameraTP[4] = { Camera(5.00365, 1.9, - 1.24928, 4.99729, 1.73375, - 0.263216, 0, 1, 0),
+							   Camera(8.00365, 1.9, 1.55072, 7.01836, 1.73146, 1.52221, 0, 1, 0),
+							   Camera(5.00365, 1.8, 4.45072, 5.0168, 1.63383, 3.46471, 0, 1, 0), 
+							   Camera(1.80365, 1.8, 1.55072, 2.7894, 1.63174, 1.55114, 0, 1, 0)};
+
+int dir[] = { 0, 90, 180, 270 };
+
+int currentDir = 0;
 
 // Textures
 GLTexture tex_ground;
@@ -389,7 +385,7 @@ void setupCamera()
 		explorerCameraFP.look();
 	}
 	else {
-		explorerCameraTP.look();
+		explorerCameraTP[currentDir].look();
 	}
 }
 
@@ -492,9 +488,9 @@ void myDisplay(void)
 
 	glutSwapBuffers();
 
-	//cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
-	//cout << explorerCameraFP.center.x << " " << explorerCameraFP.center.y << " " << explorerCameraFP.center.z << '\n';
-	//cout << explorerCameraFP.up.x << " " << explorerCameraFP.up.y << " " << explorerCameraFP.up.z << '\n';
+	cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
+	cout << explorerCameraFP.center.x << " " << explorerCameraFP.center.y << " " << explorerCameraFP.center.z << '\n';
+	cout << explorerCameraFP.up.x << " " << explorerCameraFP.up.y << " " << explorerCameraFP.up.z << '\n';
 	cout << score;
 }
 
@@ -536,41 +532,67 @@ void myDisplay(void)
 //=======================================================================
 // Keyboard Function
 //=======================================================================
+
+	
+void moveFunctionHelper(float moveSpeed) 
+{
+	if (currentDir == 0) {
+		playerAngle = 0;
+		playerY += moveSpeed;
+		explorerCameraFP.moveZ(moveSpeed);
+		for(int i=0; i<4; i++)
+			explorerCameraTP[i].moveZ(moveSpeed);
+	}
+	else if (currentDir == 1) {
+		playerAngle = 270;
+		playerX -= moveSpeed;
+		explorerCameraFP.moveX(-moveSpeed);
+		for (int i = 0; i < 4; i++)
+			explorerCameraTP[i].moveX(-moveSpeed);
+	}
+	else if (currentDir == 2) {
+		playerAngle = 180;
+		playerY -= moveSpeed;
+		explorerCameraFP.moveZ(-moveSpeed);
+		for (int i = 0; i < 4; i++)
+			explorerCameraTP[i].moveZ(-moveSpeed);
+	}
+	else {
+		playerAngle = 90;
+		playerX += moveSpeed;
+		explorerCameraFP.moveX(moveSpeed);
+		for (int i = 0; i < 4; i++)
+			explorerCameraTP[i].moveX(moveSpeed);
+	}
+}
+
 void myKeyboard(unsigned char button, int x, int y) {
-	float moveSpeed = 0.5f; // Adjust the speed as needed
+	float moveSpeed = 0.1f; // Adjust the speed as needed
 	float rotationAngle = 5.0f; // Adjust the rotation angle as needed
 
 	switch (button) {
 	case 'w':
 		if (!checkCollisionTree(playerX, playerY + moveSpeed) && !checkCollisionGem(playerX, playerY + moveSpeed)) {
-			playerY += moveSpeed;
-			playerAngle = 0.0f; // Set angle for upward movement
-			explorerCameraFP.moveZ(moveSpeed);
-			explorerCameraTP.moveZ(moveSpeed);
+			moveFunctionHelper(moveSpeed);
 		}
 		break;
 	case 'd':
 		if (!checkCollisionTree(playerX - moveSpeed, playerY) && !checkCollisionGem(playerX - moveSpeed, playerY)) {
-			playerX -= moveSpeed;
-			playerAngle = -90.0f; // Set angle for left movement
-			explorerCameraFP.moveX(-moveSpeed);
-			explorerCameraTP.moveX(-moveSpeed);
+			currentDir++;
+			currentDir %= 4;
 		}
 		break;
 	case 's':
 		if (!checkCollisionTree(playerX, playerY - moveSpeed) && !checkCollisionGem(playerX, playerY - moveSpeed)) {
-			playerY -= moveSpeed;
-			playerAngle = 180.0f; // Set angle for downward movement
-			explorerCameraFP.moveZ(-moveSpeed);
-			explorerCameraTP.moveZ(-moveSpeed);
+			currentDir += 2;
+			currentDir %= 4;
 		}
 		break;
 	case 'a':
 		if (!checkCollisionTree(playerX + moveSpeed, playerY) && !checkCollisionGem(playerX + moveSpeed, playerY)) {
-			playerX += moveSpeed;
-			playerAngle = 90.0f; // Set angle for right movement
-			explorerCameraFP.moveX(moveSpeed);
-			explorerCameraTP.moveX(moveSpeed);
+			currentDir--;
+			if(currentDir < 0)
+				currentDir += 4;
 		}
 		break;
 	case '1':
@@ -641,12 +663,10 @@ void myMotion(int x, int y)
 	if (mouseX - x > 0)
 	{
 		explorerCameraFP.rotateY(0.7);
-		explorerCameraTP.rotateYTP(0.7);
 	}
 	else
 	{
 		explorerCameraFP.rotateY(-0.7);
-		explorerCameraTP.rotateYTP(-0.7);
 	}
 
 	mouseY = y;
@@ -734,9 +754,9 @@ void main(int argc, char** argv)
 
 	glutSpecialFunc(Special);
 
-	glutMotionFunc(myMotion);
+	//glutMotionFunc(myMotion);
 
-	glutMouseFunc(myMouse);
+	//glutMouseFunc(myMouse);
 
 	//glutReshapeFunc(myReshape);
 
