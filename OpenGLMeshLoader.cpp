@@ -129,9 +129,12 @@ public:
 	void rotateYTP(float a)
 	{
 		// Rotate the distance vector around the global Y-axis by angle 'a'
-		eye.x = cos(DEG2RAD(a)) * eye.x - sin(DEG2RAD(a)) * eye.z;
-		eye.z = sin(DEG2RAD(a)) * eye.x + cos(DEG2RAD(a)) * eye.z;
-
+		float oldX = eye.x - center.x;
+		float oldZ = eye.z - center.z;
+		float newX = cos(DEG2RAD(a)) * oldX - sin(DEG2RAD(a)) * oldZ;
+		float newZ = sin(DEG2RAD(a)) * oldX + cos(DEG2RAD(a)) * oldZ;
+		eye.x = newX + center.x;
+		eye.z = newZ + center.z;
 	}
 
 	void rotateZ(float a)
@@ -144,6 +147,8 @@ public:
 
 	void look()
 	{
+		cout << "LOOKING EYE: " << eye.x << " " << eye.y << " " << eye.z << '\n';
+		cout << "LOOKING CENTER: " << center.x << " " << center.y << " " << center.z << '\n';
 		gluLookAt(
 			eye.x, eye.y, eye.z,
 			center.x, center.y, center.z,
@@ -218,7 +223,7 @@ Model_3DS model_explorer;
 Camera explorerCameraFP = Camera(5.00365, 2, 1.55072,
 	4.95831, 1.80926, 2.64968,
 	0, 1, 0);
-Camera explorerCameraTP = Camera(5.02084, 2.89375, -0.585861, 5.01413, 2.42989, 0.300026, 0.0146593, 0.885766, 0.4639);
+Camera explorerCameraTP = Camera(5.02084, 2.89375, -0.585861, 5.01413, 2.42989, 0.300026, 0, 1, 0);
 
 // Textures
 GLTexture tex_ground;
