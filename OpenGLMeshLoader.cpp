@@ -128,11 +128,10 @@ public:
 
 	void rotateYTP(float a)
 	{
-		Vector3f view = (center - eye).unit();
-		Vector3f right = up.cross(view).unit();
-		view = view * cos(DEG2RAD(a)) - right * sin(DEG2RAD(a));
-		right = up.cross(view);
-		eye = eye + view;
+		// Rotate the distance vector around the global Y-axis by angle 'a'
+		eye.x = cos(DEG2RAD(a)) * eye.x - sin(DEG2RAD(a)) * eye.z;
+		eye.z = sin(DEG2RAD(a)) * eye.x + cos(DEG2RAD(a)) * eye.z;
+
 	}
 
 	void rotateZ(float a)
@@ -529,10 +528,12 @@ void myMotion(int x, int y)
 	if (mouseX - x > 0)
 	{
 		explorerCameraFP.rotateY(0.7);
+		explorerCameraTP.rotateYTP(0.7);
 	}
 	else
 	{
 		explorerCameraFP.rotateY(-0.7);
+		explorerCameraTP.rotateYTP(-0.7);
 	}
 
 	mouseY = y;
