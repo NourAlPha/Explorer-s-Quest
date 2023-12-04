@@ -4,3 +4,4 @@ C:\Users\menrit.mosaad\Desktop\watashi no desukotoppo\7th year\Graphics winter 2
 C:\Users\menrit.mosaad\Desktop\watashi no desukotoppo\7th year\Graphics winter 2023\Labs\Lab 7\Lab 7\OpenGLMeshLoader19 - sky\Debug\OpenGLMeshLoader19.pdb
 C:\Users\omaro\Desktop\lab7\Debug\OpenGLMeshLoader19.exe
 D:\GUC\DMET 502\Explorer-s-Quest\Debug\OpenGLMeshLoader19.exe
+C:\Users\omaro\Desktop\Github\Explorer-s-Quest\Debug\OpenGLMeshLoader19.exe

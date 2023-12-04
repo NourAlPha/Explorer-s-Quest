@@ -17,6 +17,34 @@ float playerX = 5.0f;
 float playerY = 1.5f;
 float playerAngle = 0.0f; // Initial angle
 
+// Define the position of the single statue
+float statueX = 18.0; // Update with the actual x position of the statue
+float statueZ = 0.0; // Update with the actual z position of the statue
+
+// Define fixed positions for palm trees (adjust as desired)
+float gemPositions[5][2] = {
+	{-10.0, -10.0},
+	{8.0, -12.0},
+	{-5.0, 6.0},
+	{12.0, 8.0},
+	{-7.0, 15.0}
+};
+
+bool gemExists[5] = { true, true, true, true, true }; // Array to track gem existence
+
+// Array to hold tree positions
+float treePositions[25][2];
+
+
+// Define the number of trees and the grid parameters
+int numTrees = 5;
+
+
+float playerBoundingRadius = 0.5f; 
+float objectBoundingRadius = 0.5f;
+
+int score = 0;
+
 int mouseX;
 int mouseY;
 
@@ -147,8 +175,6 @@ public:
 
 	void look()
 	{
-		cout << "LOOKING EYE: " << eye.x << " " << eye.y << " " << eye.z << '\n';
-		cout << "LOOKING CENTER: " << center.x << " " << center.y << " " << center.z << '\n';
 		gluLookAt(
 			eye.x, eye.y, eye.z,
 			center.x, center.y, center.z,
@@ -219,6 +245,9 @@ int cameraZoom = 0;
 Model_3DS model_house;
 Model_3DS model_tree;
 Model_3DS model_explorer;
+Model_3DS model_gem;
+Model_3DS model_statue;
+
 
 Camera explorerCameraFP = Camera(5.00365, 2, 1.55072,
 	4.95831, 1.80926, 2.64968,
@@ -364,6 +393,23 @@ void setupCamera()
 	}
 }
 
+// Function to generate a random float between min and max
+float randomFloat(float min, float max) {
+	return ((float)rand() / RAND_MAX) * (max - min) + min;
+}
+
+void drawGem(float x, float z, int index) {
+	if (gemExists[index]) {
+		// Draw 5 gems at fixed but scattered locations on the ground
+		glPushMatrix();
+		glTranslatef(x, 0, z);
+		glScalef(0.05, 0.05, 0.05);
+		model_gem.Draw();
+		glPopMatrix();
+	}
+}
+
+
 //=======================================================================
 // Display Function
 //=======================================================================
@@ -381,31 +427,29 @@ void myDisplay(void)
 	// Draw Ground
 	RenderGround();
 
-
 	// Draw Tree Model
 	glPushMatrix();
-	glTranslatef(-10, 0, 0);
+	glTranslatef(0, 0, 12);
 	glScalef(0.7, 0.7, 0.7);
 	model_tree.Draw();
 	glPopMatrix();
+	
+	float spacing = 8.0; // Adjust the spacing between trees
 
-	glPushMatrix();
-	glTranslatef(-30, 0, -10);
-	glScalef(0.7, 0.7, 0.7);
-	model_tree.Draw();
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(-45, 0, -15);
-	glScalef(0.7, 0.7, 0.7);
-	model_tree.Draw();
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(-20, 0, -25);
-	glScalef(0.7, 0.7, 0.7);
-	model_tree.Draw();
-	glPopMatrix();
+	// Loop to draw additional trees
+	for (int i = 0; i < numTrees; ++i) {
+		for (int j = 0; j < numTrees; ++j) {
+			glPushMatrix();
+			float x = (-numTrees / 2.0 + i) * spacing;
+			float z = (-numTrees / 2.0 + j) * spacing;
+			treePositions[i * numTrees + j][0] = x;
+			treePositions[i * numTrees + j][1] = z;
+			glTranslatef(x, 0, z);
+			glScalef(0.7, 0.7, 0.7);
+			model_tree.Draw();
+			glPopMatrix();
+		}
+	}
 
 	glPushMatrix();
 	glTranslatef(playerX, 1.5, playerY);
@@ -413,12 +457,21 @@ void myDisplay(void)
 	model_explorer.Draw();
 	glPopMatrix();
 
-	// Draw house Model
 	glPushMatrix();
-	glRotatef(90.f, 1, 0, 0);
-	model_house.Draw();
+	glTranslatef(18, 0, 0);
+	glScalef(0.075, 0.075, 0.075);
+	model_statue.Draw();
 	glPopMatrix();
 
+	
+	// Assuming a 30x30 ground area
+	float groundWidth = 30.0;
+	float groundLength = 30.0;
+
+	
+	for (int i = 0; i < 5; ++i) {
+		drawGem(gemPositions[i][0], gemPositions[i][1], i);
+	}
 
 	//sky box
 	glPushMatrix();
@@ -439,55 +492,110 @@ void myDisplay(void)
 
 	glutSwapBuffers();
 
-	cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
-	cout << explorerCameraFP.center.x << " " << explorerCameraFP.center.y << " " << explorerCameraFP.center.z << '\n';
-	cout << explorerCameraFP.up.x << " " << explorerCameraFP.up.y << " " << explorerCameraFP.up.z << '\n';
-	
+	//cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
+	//cout << explorerCameraFP.center.x << " " << explorerCameraFP.center.y << " " << explorerCameraFP.center.z << '\n';
+	//cout << explorerCameraFP.up.x << " " << explorerCameraFP.up.y << " " << explorerCameraFP.up.z << '\n';
+	cout << score;
 }
+
+// Function to check collision between the player and trees
+	bool checkCollisionTree(float playerX, float playerY) {
+	for (int i = 0; i < numTrees * numTrees; ++i) {
+		float treeX = treePositions[i][0];
+		float treeZ = treePositions[i][1];
+		float distance = sqrt((playerX - treeX) * (playerX - treeX) + (playerY - treeZ) * (playerY - treeZ));
+
+		// Check if the distance between player and tree is less than the sum of their radii
+		if (distance < playerBoundingRadius + objectBoundingRadius) {
+			// Collision detected, prevent player from moving
+			return true;
+		}
+	}
+	return false; // No collision detected
+}
+
+	// Function to check collision between the player and gems
+	bool checkCollisionGem(float playerX, float playerY) {
+		for (int i = 0; i < 5; ++i) {
+			if (gemExists[i]) {
+				float gemX = gemPositions[i][0];
+				float gemZ = gemPositions[i][1];
+				float distance = sqrt((playerX - gemX) * (playerX - gemX) + (playerY - gemZ) * (playerY - gemZ));
+
+				if (distance < playerBoundingRadius + objectBoundingRadius) {
+					// Collision detected, remove the gem
+					gemExists[i] = false;
+					score++;
+					return true;
+				}
+			}
+		}
+		return false; // No collision detected
+	}
 
 //=======================================================================
 // Keyboard Function
 //=======================================================================
 void myKeyboard(unsigned char button, int x, int y) {
-	float moveSpeed = 0.1f; // Adjust the speed as needed
+	float moveSpeed = 0.5f; // Adjust the speed as needed
 	float rotationAngle = 5.0f; // Adjust the rotation angle as needed
 
 	switch (button) {
 	case 'w':
-		playerY += moveSpeed;
-		playerAngle = 0.0f; // Set angle for upward movement
-		explorerCameraFP.moveZ(moveSpeed);
-		explorerCameraTP.moveZ(moveSpeed);
+		if (!checkCollisionTree(playerX, playerY + moveSpeed) && !checkCollisionGem(playerX, playerY + moveSpeed)) {
+			playerY += moveSpeed;
+			playerAngle = 0.0f; // Set angle for upward movement
+			explorerCameraFP.moveZ(moveSpeed);
+			explorerCameraTP.moveZ(moveSpeed);
+		}
 		break;
 	case 'd':
-		playerX -= moveSpeed;
-		playerAngle = -90.0f; // Set angle for left movement
-		explorerCameraFP.moveX(-moveSpeed);
-		explorerCameraTP.moveX(-moveSpeed);
+		if (!checkCollisionTree(playerX - moveSpeed, playerY) && !checkCollisionGem(playerX - moveSpeed, playerY)) {
+			playerX -= moveSpeed;
+			playerAngle = -90.0f; // Set angle for left movement
+			explorerCameraFP.moveX(-moveSpeed);
+			explorerCameraTP.moveX(-moveSpeed);
+		}
 		break;
 	case 's':
-		playerY -= moveSpeed;
-		playerAngle = 180.0f; // Set angle for downward movement
-		explorerCameraFP.moveZ(-moveSpeed);
-		explorerCameraTP.moveZ(-moveSpeed);
+		if (!checkCollisionTree(playerX, playerY - moveSpeed) && !checkCollisionGem(playerX, playerY - moveSpeed)) {
+			playerY -= moveSpeed;
+			playerAngle = 180.0f; // Set angle for downward movement
+			explorerCameraFP.moveZ(-moveSpeed);
+			explorerCameraTP.moveZ(-moveSpeed);
+		}
 		break;
 	case 'a':
-		playerX += moveSpeed;
-		playerAngle = 90.0f; // Set angle for right movement
-		explorerCameraFP.moveX(moveSpeed);
-		explorerCameraTP.moveX(moveSpeed);
-		break;
-	case 'u':
-		explorerCameraFP.moveZ(moveSpeed);
-		break;
-	case 'o':
-		explorerCameraFP.moveZ(-moveSpeed);
+		if (!checkCollisionTree(playerX + moveSpeed, playerY) && !checkCollisionGem(playerX + moveSpeed, playerY)) {
+			playerX += moveSpeed;
+			playerAngle = 90.0f; // Set angle for right movement
+			explorerCameraFP.moveX(moveSpeed);
+			explorerCameraTP.moveX(moveSpeed);
+		}
 		break;
 	case '1':
 		isFP = true;
 		break;
 	case '2':
 		isFP = false;
+		break;
+	case 'i':
+		explorerCameraFP.moveY(moveSpeed);
+		break;
+	case 'k':
+		explorerCameraFP.moveY(-moveSpeed);
+		break;
+	case 'j':
+		explorerCameraFP.moveX(moveSpeed);
+		break;
+	case 'l':
+		explorerCameraFP.moveX(-moveSpeed);
+		break;
+	case 'u':
+		explorerCameraFP.moveZ(moveSpeed);
+		break;
+	case 'o':
+		explorerCameraFP.moveZ(-moveSpeed);
 		break;
 	case 27: // Escape key
 		exit(0);
@@ -562,9 +670,6 @@ void myMouse(int button, int state, int x, int y)
 	}
 }
 
-
-
-
 //=======================================================================
 // Reshape Function
 //=======================================================================
@@ -600,6 +705,8 @@ void LoadAssets()
 	model_house.Load("Models/house/house.3DS");
 	model_tree.Load("Models/tree/tree1.3DS");
 	model_explorer.Load("Models/explorer/workerman3DS.3DS");
+	model_statue.Load("Models/house/bollard_canal_plaza.3DS");
+	model_gem.Load("Models/house/diamond.3DS");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
