@@ -119,19 +119,21 @@ public:
 
 	void rotateY(float a)
 	{
-		// Calculate the distance from the eye to the center
-		Vector3f distance = center - eye;
-
-		// Rotate the distance vector around the global Y-axis by angle 'a'
-		float newX = cos(DEG2RAD(a)) * distance.x - sin(DEG2RAD(a)) * distance.z;
-		float newZ = sin(DEG2RAD(a)) * distance.x + cos(DEG2RAD(a)) * distance.z;
-
-		// Update the center position using the rotated distance vector
-		center.x = eye.x + newX;
-		center.z = eye.z + newZ;
+		Vector3f view = (center - eye).unit();
+		Vector3f right = up.cross(view).unit();
+		view = view * cos(DEG2RAD(a)) - right * sin(DEG2RAD(a));
+		right = up.cross(view);
+		center = eye + view;
 	}
 
-
+	void rotateYTP(float a)
+	{
+		Vector3f view = (center - eye).unit();
+		Vector3f right = up.cross(view).unit();
+		view = view * cos(DEG2RAD(a)) - right * sin(DEG2RAD(a));
+		right = up.cross(view);
+		eye = eye + view;
+	}
 
 	void rotateZ(float a)
 	{
@@ -214,9 +216,9 @@ Model_3DS model_house;
 Model_3DS model_tree;
 Model_3DS model_explorer;
 
-Camera explorerCameraFP = Camera(5.00365, 1.80362, 1.65072,
+Camera explorerCameraFP = Camera(5.00365, 2, 1.55072,
 	4.95831, 1.80926, 2.64968,
-	-0.0360427, 0.999324, -0.00727399);
+	0, 1, 0);
 Camera explorerCameraTP = Camera(5.02084, 2.89375, -0.585861, 5.01413, 2.42989, 0.300026, 0.0146593, 0.885766, 0.4639);
 
 // Textures
@@ -346,7 +348,7 @@ void setupCamera()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60, 640 / 480, 0.001, 100);
+	gluPerspective(60, WIDTH / HEIGHT, 0.001, 100);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -458,7 +460,6 @@ void myKeyboard(unsigned char button, int x, int y) {
 		playerAngle = -90.0f; // Set angle for left movement
 		explorerCameraFP.moveX(-moveSpeed);
 		explorerCameraTP.moveX(-moveSpeed);
-		//explorerCameraFP.rotateY(90.0f);
 		break;
 	case 's':
 		playerY -= moveSpeed;
@@ -520,40 +521,36 @@ void Special(int key, int x, int y)
 //=======================================================================
 // Mouse Function
 //=======================================================================
-void myMotion(int x, int y) {
-	// Sensitivity adjustment for smoother rotation
-	float sensitivity = 0.1f;
+void myMotion(int x, int y)
+{
+	y = HEIGHT - y;
+	x = WIDTH - x;
 
-	// Calculate change in mouse position
-	int dx = x - mouseX;
-	int dy = y - mouseY;
+	if (mouseX - x > 0)
+	{
+		explorerCameraFP.rotateY(0.7);
+	}
+	else
+	{
+		explorerCameraFP.rotateY(-0.7);
+	}
 
-	// Calculate rotation angles based on mouse movement
-	float angleX = dx * sensitivity;
-	float angleY = dy * sensitivity;
-
-	// Get the direction vector from player to camera
-	Vector3f direction = explorerCameraTP.eye - Vector3f(playerX, 1.5, playerY);
-
-	// Rotate the direction vector around the player
-	Vector3f rotatedDir = direction;
-	rotatedDir.x = direction.x * cos(DEG2RAD(angleX)) - direction.z * sin(DEG2RAD(angleX));
-	rotatedDir.z = direction.x * sin(DEG2RAD(angleX)) + direction.z * cos(DEG2RAD(angleX));
-	
-	// Calculate the new camera position after rotation
-	explorerCameraTP.eye = Vector3f(playerX, 1.5, playerY) + rotatedDir;
-
-	// Update the initial mouse position
-	mouseX = x;
 	mouseY = y;
+	mouseX = x;
 
-	glutPostRedisplay(); // Re-draw scene
+	glutPostRedisplay();	//Re-draw scene 
 }
 
+//=======================================================================
+// Mouse Function
+//=======================================================================
+void myMouse(int button, int state, int x, int y)
+{
+	y = HEIGHT - y;
+	x = WIDTH - x;
 
-void myMouse(int button, int state, int x, int y) {
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		// Store the initial mouse position when left button is clicked
+	if (state == GLUT_DOWN)
+	{
 		mouseX = x;
 		mouseY = y;
 	}
