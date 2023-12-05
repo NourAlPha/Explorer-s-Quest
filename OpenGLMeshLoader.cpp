@@ -170,6 +170,17 @@ public:
 		refresh();
 	}
 
+	void updateYCenterTP(float a)
+	{
+		yLook += a;
+		refresh();
+	}
+
+	void updateYCenterFP(float a)
+	{
+		center.y += a;
+	}
+
 	void refresh()
 	{
 		eye = Vector3f(playerX - sin(DEG2RAD(cameraPosX)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY)) * 3);
@@ -226,12 +237,6 @@ public:
 		center = Vector3f(0.784413, 0.805003, 0.0305215);
 		up = Vector3f(-0.368009, 0.928631, -0.047049);
 	}
-
-	void updateYCenter(float a)
-	{
-		center.y += a;
-		yLook += a;
-	}
 };
 
 class Vector
@@ -271,7 +276,7 @@ Camera explorerCameraFP = Camera(5.00352, 2.09995, 1.55395,
 	5.04473, 2.11483, 0.554911,
 	0, 1, 0);
 Camera explorerCameraTP = Camera(playerX - sin(DEG2RAD(cameraPosX)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY)) * 3,
-	playerX, 1, playerY, 0, 1, 0);
+	playerX, yLook, playerY, 0, 1, 0);
 
 int dir[] = { 0, 90, 180, 270 };
 
@@ -836,8 +841,8 @@ void pressMotion(int x, int y)
 
 	if (dy)
 	{
-		explorerCameraTP.updateYCenter(-dy * cameraSpeedY);
-		explorerCameraFP.updateYCenter(-dy * cameraSpeedY);
+		explorerCameraTP.updateYCenterTP(-dy * cameraSpeedY);
+		explorerCameraFP.updateYCenterFP(-dy * cameraSpeedY);
 	}
 
 	glutWarpPointer(WIDTH / 2, HEIGHT / 2);
