@@ -15,10 +15,12 @@ float cameraPosX = 0, cameraPosY = 0;
 int WIDTH = 1280;
 int HEIGHT = 720;
 
-float cameraSpeed = 0.1f;
+float cameraSpeedX = 0.1f, cameraSpeedY = 0.001f;
 float playerX = 5.0f;
 float playerY = 1.5f;
 float playerAngle = 180.0f; // Initial angle
+float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
+bool keyTaken = false , keyLoaded = false;
 
 // Define the position of the single statue
 float statueX = 18.0; // Update with the actual x position of the statue
@@ -45,6 +47,8 @@ int numTrees = 5;
 
 float playerBoundingRadius = 0.5f; 
 float objectBoundingRadius = 0.5f;
+
+float yLook = 1.0f;
 
 int score = 0;
 
@@ -169,7 +173,7 @@ public:
 	void refresh()
 	{
 		eye = Vector3f(playerX - sin(DEG2RAD(cameraPosX)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY)) * 3);
-		center = Vector3f(playerX, 1, playerY);
+		center = Vector3f(playerX, yLook, playerY);
 	}
 
 	void rotateZ(float a)
@@ -222,6 +226,12 @@ public:
 		center = Vector3f(0.784413, 0.805003, 0.0305215);
 		up = Vector3f(-0.368009, 0.928631, -0.047049);
 	}
+
+	void updateYCenter(float a)
+	{
+		center.y += a;
+		yLook += a;
+	}
 };
 
 class Vector
@@ -254,6 +264,7 @@ Model_3DS model_tree;
 Model_3DS model_explorer;
 Model_3DS model_gem;
 Model_3DS model_statue;
+Model_3DS model_key, model_key_taken, model_key_loaded;
 
 
 Camera explorerCameraFP = Camera(5.00352, 2.09995, 1.55395,
@@ -268,6 +279,24 @@ int currentDir = 0;
 
 // Textures
 GLTexture tex_ground;
+
+//=======================================================================
+// Animation Function
+//=======================================================================
+
+void Anim()
+{
+	if (keyPos >= 1.3) {
+		keyAdd = -0.01;
+	}
+	if (keyPos <= 0.7) {
+		keyAdd = 0.01;
+	}
+	keyPos += keyAdd;
+	keyRotation += 5;
+	glutPostRedisplay();
+}
+
 
 //=======================================================================
 // Lighting Configuration Function
@@ -441,12 +470,20 @@ void myDisplay(void)
 	RenderGround();
 
 	// Draw Tree Model
-	glPushMatrix();
+	/*glPushMatrix();
 	glTranslatef(0, 0, 12);
 	glScalef(0.7, 0.7, 0.7);
 	model_tree.Draw();
-	glPopMatrix();
-	
+	glPopMatrix();*/
+
+	if (score == 5 && !keyTaken && !keyLoaded) {
+		glPushMatrix();
+		glTranslatef(0, keyPos, 0);
+		glRotatef(keyRotation, 0, 1, 0);
+		//glScalef(0.3, 0.3, 0.3);
+		model_key.Draw();
+		glPopMatrix();
+	}
 	float spacing = 8.0; // Adjust the spacing between trees
 
 	// Loop to draw additional trees
@@ -464,16 +501,42 @@ void myDisplay(void)
 		}
 	}
 
+	// draw player
 	glPushMatrix();
-	glTranslatef(playerX, 1.5, playerY);
-	glRotated(playerAngle, 0, 1,0);
+	glTranslatef(playerX, 1.5 , playerY);
+	glRotated(playerAngle, 0, 1, 0);
 	model_explorer.Draw();
+
+	if (keyTaken) {
+		glPushMatrix();
+		glTranslatef(-0.45, -0.6, 0);
+		glRotatef(90, 1, 0, 0);
+		glRotatef(90, 0, 1, 0);
+		model_key_taken.Draw();
+		glPopMatrix();
+	}
+
 	glPopMatrix();
 
+
+	// drawe statue
 	glPushMatrix();
 	glTranslatef(18, 0, 0);
-	glScalef(0.075, 0.075, 0.075);
+	
+	glPushMatrix();
+	glRotatef(-90 , 0 , 1 , 0);
+	glScalef(0.5, 1, 0.5);
 	model_statue.Draw();
+	glPopMatrix();
+
+	if (keyLoaded) {
+		glPushMatrix();
+		glTranslatef(-1.165, 1.3, 0);
+		glRotatef(180, 1, 0, 0);
+		glRotatef(-50, 0, 0, 1);
+		model_key_loaded.Draw();
+		glPopMatrix();
+	}
 	glPopMatrix();
 
 	
@@ -505,13 +568,15 @@ void myDisplay(void)
 
 	glutSwapBuffers();
 
-	cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
+	/*cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
 	cout << explorerCameraFP.center.x << " " << explorerCameraFP.center.y << " " << explorerCameraFP.center.z << '\n';
 	cout << explorerCameraFP.up.x << " " << explorerCameraFP.up.y << " " << explorerCameraFP.up.z << '\n';
-	cout << score;
+	cout << score;*/
 }
-
+//=======================================================================
 // Function to check collision between the player and trees
+//=======================================================================
+
 	bool checkCollisionTree(float playerX, float playerY) {
 	for (int i = 0; i < numTrees * numTrees; ++i) {
 		float treeX = treePositions[i][0];
@@ -519,15 +584,17 @@ void myDisplay(void)
 		float distance = sqrt((playerX - treeX) * (playerX - treeX) + (playerY - treeZ) * (playerY - treeZ));
 
 		// Check if the distance between player and tree is less than the sum of their radii
-		if (distance < playerBoundingRadius + objectBoundingRadius) {
+		if (distance + 0.6 < playerBoundingRadius + objectBoundingRadius) {
 			// Collision detected, prevent player from moving
 			return true;
 		}
 	}
 	return false; // No collision detected
 }
+//=======================================================================
+// Function to check collision between the player and gems
+//=======================================================================
 
-	// Function to check collision between the player and gems
 	bool checkCollisionGem(float playerX, float playerY) {
 		for (int i = 0; i < 5; ++i) {
 			if (gemExists[i]) {
@@ -542,6 +609,42 @@ void myDisplay(void)
 					return true;
 				}
 			}
+		}
+		return false; // No collision detected
+	}
+
+//=======================================================================
+// Function to check collision between the player and key
+//=======================================================================
+
+	bool checkCollisionKey(float playerX, float playerY) {
+		float distance = sqrt((playerX ) * (playerX) + (playerY) * (playerY));
+		if (distance < playerBoundingRadius + objectBoundingRadius) {
+			return true;
+		}
+		return false; // No collision detected
+	}
+
+//=======================================================================
+// Function to check collision between the player and statue
+//=======================================================================
+
+	bool checkCollisionStatue(float playerX, float playerY) {
+		float distance = sqrt((playerX - 18) * (playerX - 18) + (playerY) * (playerY));
+		if (distance - 0.1 < playerBoundingRadius + objectBoundingRadius) {
+			return true;
+		}
+		return false; // No collision detected
+	}
+
+//=======================================================================
+// Function to check collision between the player and statue2
+//=======================================================================
+
+	bool checkCollisionStatue2(float playerX, float playerY) {
+		float distance = sqrt((playerX - 18) * (playerX - 18) + (playerY) * (playerY));
+		if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
+			return true;
 		}
 		return false; // No collision detected
 	}
@@ -591,7 +694,9 @@ void myKeyboard(unsigned char button, int x, int y) {
 
 	switch (button) {
 	case 'w':
-		if (!checkCollisionTree(playerX, playerY + moveSpeed) && !checkCollisionGem(playerX, playerY + moveSpeed)) {
+		if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z ) && 
+			!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && 
+			!checkCollisionGem(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z)) {
 			playerY += moveSpeed * view.z;
 			playerX += moveSpeed * view.x;
 			explorerCameraFP.moveZ(moveSpeed * view.z);
@@ -600,7 +705,9 @@ void myKeyboard(unsigned char button, int x, int y) {
 		}
 		break;
 	case 'd':
-		if (!checkCollisionTree(playerX - moveSpeed, playerY) && !checkCollisionGem(playerX - moveSpeed, playerY)) {
+		if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && 
+			!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
+			!checkCollisionGem(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x)) {
 			playerY += moveSpeed * view.x;
 			playerX -= moveSpeed * view.z;
 			explorerCameraFP.moveZ(moveSpeed * view.x);
@@ -609,7 +716,9 @@ void myKeyboard(unsigned char button, int x, int y) {
 		}
 		break;
 	case 's':
-		if (!checkCollisionTree(playerX, playerY - moveSpeed) && !checkCollisionGem(playerX, playerY - moveSpeed)) {
+		if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && 
+			!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
+			!checkCollisionGem(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z)) {
 			playerY -= moveSpeed * view.z;
 			playerX -= moveSpeed * view.x;
 			explorerCameraFP.moveZ(-moveSpeed * view.z);
@@ -618,7 +727,9 @@ void myKeyboard(unsigned char button, int x, int y) {
 		}
 		break;
 	case 'a':
-		if (!checkCollisionTree(playerX + moveSpeed, playerY) && !checkCollisionGem(playerX + moveSpeed, playerY)) {
+		if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && 
+			!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
+			!checkCollisionGem(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x)) {
 			playerY -= moveSpeed * view.x;
 			playerX += moveSpeed * view.z;
 			explorerCameraFP.moveZ(-moveSpeed * view.x);
@@ -656,7 +767,13 @@ void myKeyboard(unsigned char button, int x, int y) {
 	default:
 		break;
 	}
-
+	if (checkCollisionKey(playerX, playerY) && score == 5) {
+		keyTaken = true;
+	}
+	if (checkCollisionStatue2(playerX, playerY) && keyTaken) {
+		keyTaken = false;
+		keyLoaded = true;
+	}
 	glutPostRedisplay();
 }
 
@@ -692,8 +809,8 @@ void myMotion(int x, int y)
 	int dx = x - mouseX;
 
 	if (dx) {
-		explorerCameraTP.rotateYTP(dx * cameraSpeed);
-		explorerCameraFP.rotateY(dx * cameraSpeed);
+		explorerCameraTP.rotateYTP(dx * cameraSpeedX);
+		explorerCameraFP.rotateY(dx * cameraSpeedX);
 	}
 
 	glutWarpPointer(WIDTH/2, HEIGHT/2);
@@ -711,6 +828,22 @@ void myMouse(int button, int state, int x, int y)
 	mouseX = x;
 	mouseY = y;
 }
+
+
+void pressMotion(int x, int y)
+{
+	int dy = y - mouseY;
+
+	if (dy)
+	{
+		explorerCameraTP.updateYCenter(-dy * cameraSpeedY);
+		explorerCameraFP.updateYCenter(-dy * cameraSpeedY);
+	}
+
+	glutWarpPointer(WIDTH / 2, HEIGHT / 2);
+	glutPostRedisplay();	//Re-draw scene
+}
+
 
 //=======================================================================
 // Reshape Function
@@ -747,12 +880,15 @@ void LoadAssets()
 	model_house.Load("Models/house/house.3DS");
 	model_tree.Load("Models/tree/tree1.3DS");
 	model_explorer.Load("Models/explorer/workerman3DS.3DS");
-	model_statue.Load("Models/house/bollard_canal_plaza.3DS");
+	model_statue.Load("Models/house/column.3DS");
 	model_gem.Load("Models/house/diamond.3DS");
+	model_key.Load("Models/key/key4.3DS");
+	model_key_loaded.Load("Models/key/key4.3DS");
+	model_key_taken.Load("Models/key/key4.3DS");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
-	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
+	loadBMP(&tex, "Textures/sky4.bmp", true);
 }
 
 //=======================================================================
@@ -780,6 +916,9 @@ void main(int argc, char** argv)
 
 	glutWarpPointer(WIDTH / 2, HEIGHT / 2);
 
+	glutIdleFunc(Anim);
+
+	glutMotionFunc(pressMotion);
 	//glutMouseFunc(myMouse);
 
 	glutFullScreen();
