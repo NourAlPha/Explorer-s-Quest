@@ -15,6 +15,7 @@ float cameraPosX = 0, cameraPosY = 0;
 int WIDTH = 1280;
 int HEIGHT = 720;
 
+float cameraSpeed = 0.1f;
 float playerX = 5.0f;
 float playerY = 1.5f;
 float playerAngle = 180.0f; // Initial angle
@@ -687,23 +688,15 @@ void Special(int key, int x, int y)
 //=======================================================================
 void myMotion(int x, int y)
 {
-	y = HEIGHT - y;
-	x = WIDTH - x;
 
-	if (mouseX - x > 0)
-	{
-		explorerCameraTP.rotateYTP(2);
-		explorerCameraFP.rotateY(2);
-	}
-	else if(mouseX - x < 0)
-	{
-		explorerCameraTP.rotateYTP(-2);
-		explorerCameraFP.rotateY(-2);
+	int dx = x - mouseX;
+
+	if (dx) {
+		explorerCameraTP.rotateYTP(dx * cameraSpeed);
+		explorerCameraFP.rotateY(dx * cameraSpeed);
 	}
 
-	mouseY = y;
-	mouseX = x;
-
+	glutWarpPointer(WIDTH/2, HEIGHT/2);
 	glutPostRedisplay();	//Re-draw scene 
 }
 
