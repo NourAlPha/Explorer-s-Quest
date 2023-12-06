@@ -8,7 +8,9 @@
 
 using namespace std;
 
-#define DEG2RAD(a) (a * 0.0174532925)
+float DEG2RAD(float x) {
+	return x * 3.14159265 / 180.0;
+}
 
 float cameraPosX = 0, cameraPosY = 0;
 
@@ -38,11 +40,11 @@ float gemPositions[5][2] = {
 bool gemExists[5] = { true, true, true, true, true }; // Array to track gem existence
 
 // Array to hold tree positions
-float treePositions[25][2];
+const int numTrees = 100;
+float treePositions[numTrees * numTrees][2];
 
 
 // Define the number of trees and the grid parameters
-int numTrees = 5;
 int cnt = 0;
 
 
@@ -266,7 +268,7 @@ int cameraZoom = 0;
 
 // Model Variables
 Model_3DS model_house;
-Model_3DS model_tree;
+Model_3DS model_tree[3];
 Model_3DS model_explorer[21];
 Model_3DS model_gem;
 Model_3DS model_statue;
@@ -494,18 +496,79 @@ void myDisplay(void)
 	float spacing = 8.0; // Adjust the spacing between trees
 
 	// Loop to draw additional trees
-	for (int i = 0; i < numTrees; ++i) {
-		for (int j = 0; j < numTrees; ++j) {
-			glPushMatrix();
-			float x = (-numTrees / 2.0 + i) * spacing;
-			float z = (-numTrees / 2.0 + j) * spacing;
-			treePositions[i * numTrees + j][0] = x;
-			treePositions[i * numTrees + j][1] = z;
-			glTranslatef(x, 0, z);
-			//glScalef(2, 2, 2);
-			model_tree.Draw();
-			glPopMatrix();
-		}
+	for (int i = 0, x = -40; i < 6; ++i, x += 6) {
+		float y = sqrt(225 - (x + 25) * (x + 25)) - 25;
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(0.7, 0.7, 0.7);
+		model_tree[0].Draw();
+		glPopMatrix();
+		treePositions[i][0] = x;
+		treePositions[i][1] = y;
+		y = -sqrt(225 - (x + 25) * (x + 25)) - 25;
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(0.7, 0.7, 0.7);
+		model_tree[0].Draw();
+		glPopMatrix();
+		treePositions[i + 30][0] = x;
+		treePositions[i + 30][1] = y;
+	}
+
+	for (int i = 0, x = -40; i < 6; ++i, x += 6) {
+		float y = sqrt(225 - (x + 25) * (x + 25)) + 25;
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(0.7, 0.7, 0.7);
+		model_tree[1].Draw();
+		glPopMatrix();
+		treePositions[i][0] = x;
+		treePositions[i][1] = y;
+		y = -sqrt(225 - (x + 25) * (x + 25)) + 25;
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(0.7, 0.7, 0.7);
+		model_tree[1].Draw();
+		glPopMatrix();
+		treePositions[i + 30][0] = x;
+		treePositions[i + 30][1] = y;
+	}
+
+	for (int i = 0, x = 20; i < 6; i++, x += 5)
+	{
+		float y = sqrt(900 - (x - 50) * (x - 50));
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[i][0] = x;
+		treePositions[i][1] = y;
+		y = -sqrt(900 - (x - 50) * (x - 50));
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[i + 30][0] = x;
+		treePositions[i + 30][1] = y;
+	}
+
+	for (int i = 0, x = -45; i < 6; i++, x += 10) {
+		glPushMatrix();
+		glTranslatef(x, 0, 5);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[i][0] = x;
+		treePositions[i][1] = 5;
+		glPushMatrix();
+		glTranslatef(x, 0, -5);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[i][0] = x;
+		treePositions[i][1] = -5;
 	}
 
 	// draw player
@@ -534,9 +597,29 @@ void myDisplay(void)
 	glPopMatrix();
 
 
-	// drawe statue
+	// draw statue
 	glPushMatrix();
-	glTranslatef(18, 0, 0);
+	glTranslatef(30, 0, 7);
+
+	glPushMatrix();
+	glRotatef(-90, 0, 1, 0);
+	glScalef(0.5, 1, 0.5);
+	model_statue.Draw();
+	glPopMatrix();
+
+	if (keyLoaded) {
+		glPushMatrix();
+		glTranslatef(-1.165, 1.3, 0);
+		glRotatef(180, 1, 0, 0);
+		glRotatef(-50, 0, 0, 1);
+		model_key_loaded.Draw();
+		glPopMatrix();
+	}
+	glPopMatrix();
+
+	// draw statue
+	glPushMatrix();
+	glTranslatef(30, 0, -7);
 
 	glPushMatrix();
 	glRotatef(-90, 0, 1, 0);
@@ -555,9 +638,9 @@ void myDisplay(void)
 	glPopMatrix();
 
 
-	// drawe gate
+	// draw gate
 	glPushMatrix();
-	glTranslatef(25, 0, 0);
+	glTranslatef(45, 0, 0);
 
 	glPushMatrix();
 	glRotatef(-90, 0, 1, 0);
@@ -908,7 +991,9 @@ void LoadAssets()
 {
 	// Loading Model files
 	model_house.Load("Models/house/house.3DS");
-	model_tree.Load("Models/tree/tree1.3DS");
+	model_tree[0].Load("Models/tree/tree1.3DS");
+	model_tree[1].Load("Models/tree/tree/tree.3ds");
+	model_tree[2].Load("Models/tree/tree/firtree1.3ds");
 	model_explorer[0].Load("Models/explorer/charact.3DS");
 	model_explorer[1].Load("Models/explorer/charact1.3DS");
 	model_explorer[2].Load("Models/explorer/charact2.3DS");
