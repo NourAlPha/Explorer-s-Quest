@@ -6,12 +6,17 @@
 #include <math.h>
 #include <iostream>
 #include <vector>
+#include <irrKlang.h>
+
+using namespace irrklang;
 
 using namespace std;
 
 float DEG2RAD(float x) {
 	return x * 3.14159265 / 180.0;
 }
+
+ISoundEngine* engine;
 
 float cameraPosX = 0, cameraPosY = 0;
 
@@ -822,6 +827,7 @@ void myDisplay(void)
 					// Collision detected, remove the gem
 					gemExists[i] = false;
 					score[(int)gemPositions[i][2]]++;
+					engine->play2D("Sounds/pickup.wav", false);
 					return true;
 				}
 			}
@@ -1000,13 +1006,18 @@ void myKeyboard(unsigned char button, int x, int y) {
 		break;
 	}
 	if (checkCollisionKey(playerX, playerY) && !keyTaken) {
-		if(!keyLoaded2 && keyID == 0)
+		if (!keyLoaded2 && keyID == 0) {
+			engine->play2D("Sounds/key_pickup.mp3");
 			keyTaken = true;
-		if (!keyLoaded && keyID == 1)
+		}
+		if (!keyLoaded && keyID == 1) {
+			engine->play2D("Sounds/key_pickup.mp3");
 			keyTaken = true;
+		}
 	}
 	if (checkCollisionStatue2(playerX, playerY) && keyTaken) {
 		keyTaken = false;
+		engine -> play2D("Sounds/unlock.wav", false);
 		if(keyID == 0)
 			keyLoaded2 = true;
 		else 
@@ -1165,6 +1176,11 @@ void LoadAssets()
 //=======================================================================
 void main(int argc, char** argv)
 {
+	engine = createIrrKlangDevice();
+	if (!engine)
+		return;
+	engine->play2D("Sounds/ambient.mp3", true);
+
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -1208,4 +1224,6 @@ void main(int argc, char** argv)
 	glShadeModel(GL_SMOOTH);
 
 	glutMainLoop();
+	engine->drop();
+
 }
