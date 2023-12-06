@@ -57,7 +57,7 @@ int cnt = 0;
 float playerBoundingRadius = 0.5f; 
 float objectBoundingRadius = 0.5f;
 
-float yLook = 1.0f;
+float yLook = 1.5f;
 
 int score[2];
 
@@ -199,8 +199,8 @@ public:
 
 	void resetFP()
 	{
-		eye = Vector3f(5.00352, 2.29995, 1.55395);
-		center = Vector3f(5.2176, 2.3146, 0.577245);
+		eye = Vector3f(playerX, 2.3, playerY);
+		center = Vector3f(playerX + sin(DEG2RAD(cameraPosX)) * 3, 2.3, playerY - cos(DEG2RAD(cameraPosY)) * 3);
 		up = Vector3f(0, 1, 0);
 	}
 
@@ -292,8 +292,8 @@ Model_3DS model_key, model_key_taken, model_key_loaded;
 Model_3DS model_key2, model_key_taken2, model_key_loaded2;
 
 
-Camera explorerCameraFP = Camera(5.00352, 2.29995, 1.55395,
-	5.2176, 2.3146, 0.577245,
+Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
+	playerX + sin(DEG2RAD(cameraPosX)) * 3, 2.3, playerY - cos(DEG2RAD(cameraPosY)) * 3,
 	0, 1, 0);
 Camera explorerCameraTP = Camera(playerX - sin(DEG2RAD(cameraPosX)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY)) * 3,
 	playerX, yLook, playerY, 0, 1, 0);
@@ -880,10 +880,6 @@ void myDisplay(void)
 
 
 	glutSwapBuffers();
-
-	cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
-	cout << explorerCameraFP.center.x << " " << explorerCameraFP.center.y << " " << explorerCameraFP.center.z << '\n';
-	cout << explorerCameraFP.up.x << " " << explorerCameraFP.up.y << " " << explorerCameraFP.up.z << '\n';
 	
 }
 //=======================================================================
@@ -1182,8 +1178,10 @@ void pressMotion(int x, int y)
 
 	if (dy)
 	{
-		explorerCameraTP.updateYCenterTP(-dy * cameraSpeedY);
-		explorerCameraFP.updateYCenterFP(-dy * cameraSpeedY);
+		if(isFP)
+			explorerCameraFP.updateYCenterFP(-dy * cameraSpeedY);
+		else
+			explorerCameraTP.updateYCenterTP(-dy * cameraSpeedY);
 	}
 
 	glutWarpPointer(WIDTH / 2, HEIGHT / 2);
