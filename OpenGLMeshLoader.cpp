@@ -43,6 +43,7 @@ float treePositions[25][2];
 
 // Define the number of trees and the grid parameters
 int numTrees = 5;
+int cnt = 0;
 
 
 float playerBoundingRadius = 0.5f; 
@@ -266,7 +267,7 @@ int cameraZoom = 0;
 // Model Variables
 Model_3DS model_house;
 Model_3DS model_tree;
-Model_3DS model_explorer;
+Model_3DS model_explorer[21];
 Model_3DS model_gem;
 Model_3DS model_statue;
 Model_3DS model_key, model_key_taken, model_key_loaded;
@@ -500,7 +501,7 @@ void myDisplay(void)
 			treePositions[i * numTrees + j][0] = x;
 			treePositions[i * numTrees + j][1] = z;
 			glTranslatef(x, 0, z);
-			glScalef(0.7, 0.7, 0.7);
+			glScalef(2, 2, 2);
 			model_tree.Draw();
 			glPopMatrix();
 		}
@@ -508,18 +509,26 @@ void myDisplay(void)
 
 	// draw player
 	glPushMatrix();
-	glTranslatef(playerX, 1.5 , playerY);
+	glTranslatef(playerX, 0, playerY);
 	glRotated(playerAngle, 0, 1, 0);
-	model_explorer.Draw();
 
+	for (int i = 0; i < 21; i++) {
+		if (i == cnt) {
+			glPushMatrix();
+			glScaled(0.15, 0.23, 0.15);
+			model_explorer[i].Draw();
+			glPopMatrix();
+		}
+	}
 	if (keyTaken) {
 		glPushMatrix();
-		glTranslatef(-0.45, -0.6, 0);
+		glTranslatef(-0.45, 0.25, 0);
 		glRotatef(90, 1, 0, 0);
 		glRotatef(90, 0, 1, 0);
 		model_key_taken.Draw();
 		glPopMatrix();
 	}
+
 
 	glPopMatrix();
 
@@ -527,9 +536,9 @@ void myDisplay(void)
 	// drawe statue
 	glPushMatrix();
 	glTranslatef(18, 0, 0);
-	
+
 	glPushMatrix();
-	glRotatef(-90 , 0 , 1 , 0);
+	glRotatef(-90, 0, 1, 0);
 	glScalef(0.5, 1, 0.5);
 	model_statue.Draw();
 	glPopMatrix();
@@ -544,12 +553,12 @@ void myDisplay(void)
 	}
 	glPopMatrix();
 
-	
+
 	// Assuming a 30x30 ground area
 	float groundWidth = 30.0;
 	float groundLength = 30.0;
 
-	
+
 	for (int i = 0; i < 5; ++i) {
 		drawGem(gemPositions[i][0], gemPositions[i][1], i);
 	}
@@ -772,13 +781,15 @@ void myKeyboard(unsigned char button, int x, int y) {
 	default:
 		break;
 	}
-	if (checkCollisionKey(playerX, playerY) && score == 5) {
+	if (checkCollisionKey(playerX, playerY) && score == 5 && !keyLoaded) {
 		keyTaken = true;
 	}
 	if (checkCollisionStatue2(playerX, playerY) && keyTaken) {
 		keyTaken = false;
 		keyLoaded = true;
 	}
+	cnt++;
+	if (cnt > 20) cnt = 0;
 	glutPostRedisplay();
 }
 
@@ -884,7 +895,27 @@ void LoadAssets()
 	// Loading Model files
 	model_house.Load("Models/house/house.3DS");
 	model_tree.Load("Models/tree/tree1.3DS");
-	model_explorer.Load("Models/explorer/workerman3DS.3DS");
+	model_explorer[0].Load("Models/explorer/charact.3DS");
+	model_explorer[1].Load("Models/explorer/charact1.3DS");
+	model_explorer[2].Load("Models/explorer/charact2.3DS");
+	model_explorer[3].Load("Models/explorer/charact3.3DS");
+	model_explorer[4].Load("Models/explorer/charact4.3DS");
+	model_explorer[5].Load("Models/explorer/charact5.3DS");
+	model_explorer[6].Load("Models/explorer/charact6.3DS");
+	model_explorer[7].Load("Models/explorer/charact7.3DS");
+	model_explorer[8].Load("Models/explorer/charact8.3DS");
+	model_explorer[9].Load("Models/explorer/charact9.3DS");
+	model_explorer[10].Load("Models/explorer/charact10.3DS");
+	model_explorer[11].Load("Models/explorer/charact11.3DS");
+	model_explorer[12].Load("Models/explorer/charact12.3DS");
+	model_explorer[13].Load("Models/explorer/charact13.3DS");
+	model_explorer[14].Load("Models/explorer/charact14.3DS");
+	model_explorer[15].Load("Models/explorer/charact15.3DS");
+	model_explorer[16].Load("Models/explorer/charact16.3DS");
+	model_explorer[17].Load("Models/explorer/charact17.3DS");
+	model_explorer[18].Load("Models/explorer/charact18.3DS");
+	model_explorer[19].Load("Models/explorer/charact19.3DS");
+	model_explorer[20].Load("Models/explorer/charact20.3DS");
 	model_statue.Load("Models/house/column.3DS");
 	model_gem.Load("Models/house/diamond.3DS");
 	model_key.Load("Models/key/key4.3DS");
