@@ -41,7 +41,7 @@ bool gemExists[5] = { true, true, true, true, true }; // Array to track gem exis
 
 // Array to hold tree positions
 const int numTrees = 100;
-float treePositions[numTrees * numTrees][2];
+float treePositions[numTrees][2];
 
 
 // Define the number of trees and the grid parameters
@@ -497,6 +497,7 @@ void myDisplay(void)
 	float spacing = 8.0; // Adjust the spacing between trees
 
 	// Loop to draw additional trees
+	int counter = 0;
 	for (int i = 0, x = -40; i < 6; ++i, x += 6) {
 		float y = sqrt(225 - (x + 25) * (x + 25)) - 25;
 		glPushMatrix();
@@ -504,16 +505,16 @@ void myDisplay(void)
 		glScalef(0.7, 0.7, 0.7);
 		model_tree[0].Draw();
 		glPopMatrix();
-		treePositions[i][0] = x;
-		treePositions[i][1] = y;
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
 		y = -sqrt(225 - (x + 25) * (x + 25)) - 25;
 		glPushMatrix();
 		glTranslatef(x, 0, y);
 		glScalef(0.7, 0.7, 0.7);
 		model_tree[0].Draw();
 		glPopMatrix();
-		treePositions[i + 30][0] = x;
-		treePositions[i + 30][1] = y;
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
 	}
 
 	for (int i = 0, x = -40; i < 6; ++i, x += 6) {
@@ -523,16 +524,16 @@ void myDisplay(void)
 		glScalef(0.7, 0.7, 0.7);
 		model_tree[1].Draw();
 		glPopMatrix();
-		treePositions[i][0] = x;
-		treePositions[i][1] = y;
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
 		y = -sqrt(225 - (x + 25) * (x + 25)) + 25;
 		glPushMatrix();
 		glTranslatef(x, 0, y);
 		glScalef(0.7, 0.7, 0.7);
 		model_tree[1].Draw();
 		glPopMatrix();
-		treePositions[i + 30][0] = x;
-		treePositions[i + 30][1] = y;
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
 	}
 
 	for (int i = 0, x = 20; i < 6; i++, x += 5)
@@ -543,33 +544,87 @@ void myDisplay(void)
 		glScalef(2, 3, 2);
 		model_tree[2].Draw();
 		glPopMatrix();
-		treePositions[i][0] = x;
-		treePositions[i][1] = y;
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
 		y = -sqrt(900 - (x - 50) * (x - 50));
 		glPushMatrix();
 		glTranslatef(x, 0, y);
 		glScalef(2, 3, 2);
 		model_tree[2].Draw();
 		glPopMatrix();
-		treePositions[i + 30][0] = x;
-		treePositions[i + 30][1] = y;
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
 	}
 
-	for (int i = 0, x = -45; i < 6; i++, x += 10) {
+	for (int i = 0, x = 0; i < 6; i++, x += 4)
+	{
+		float y = sqrt(100 - (x - 10) * (x - 10)) + 35;
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
+		y = -sqrt(100 - (x - 10) * (x - 10)) + 35;
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
+	}
+
+	glPushMatrix();
+	//glRotatef(-90, 0, 1, 0);
+	//glScalef(0.5, 1, 0.5);
+	glTranslatef(10, 0, 35);
+	model_pond.Draw();
+	glPopMatrix();
+
+	for (int i = 0, x = 0; i < 6; i++, x += 4)
+	{
+		float y = sqrt(100 - (x - 10) * (x - 10)) - 35;
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
+		y = -sqrt(100 - (x - 10) * (x - 10)) - 35;
+		glPushMatrix();
+		glTranslatef(x, 0, y);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = y;
+	}
+
+	glPushMatrix();
+	//glRotatef(-90, 0, 1, 0);
+	//glScalef(0.5, 1, 0.5);
+	glTranslatef(10, 0, -35);
+	model_pond.Draw();
+	glPopMatrix();
+
+	for (int i = 0, x = -45; i < 3; i++, x += 20) {
 		glPushMatrix();
 		glTranslatef(x, 0, 5);
 		glScalef(2, 3, 2);
 		model_tree[2].Draw();
 		glPopMatrix();
-		treePositions[i][0] = x;
-		treePositions[i][1] = 5;
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = 5;
 		glPushMatrix();
 		glTranslatef(x, 0, -5);
 		glScalef(2, 3, 2);
 		model_tree[2].Draw();
 		glPopMatrix();
-		treePositions[i][0] = x;
-		treePositions[i][1] = -5;
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = -5;
 	}
 
 	// draw player
@@ -655,12 +710,6 @@ void myDisplay(void)
 	glPushMatrix();
 	glTranslatef(40, 0, 7);
 
-	glPushMatrix();
-	//glRotatef(-90, 0, 1, 0);
-	//glScalef(0.5, 1, 0.5);
-	model_pond.Draw();
-	glPopMatrix();
-
 	glPopMatrix();
 
 
@@ -702,13 +751,13 @@ void myDisplay(void)
 //=======================================================================
 
 	bool checkCollisionTree(float playerX, float playerY) {
-	for (int i = 0; i < numTrees * numTrees; ++i) {
+	for (int i = 0; i < numTrees; ++i) {
 		float treeX = treePositions[i][0];
 		float treeZ = treePositions[i][1];
 		float distance = sqrt((playerX - treeX) * (playerX - treeX) + (playerY - treeZ) * (playerY - treeZ));
 
 		// Check if the distance between player and tree is less than the sum of their radii
-		if (distance + 0.6 < playerBoundingRadius + objectBoundingRadius) {
+		if (distance + 0.7 < playerBoundingRadius + objectBoundingRadius) {
 			// Collision detected, prevent player from moving
 			return true;
 		}
