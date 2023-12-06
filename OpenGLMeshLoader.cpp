@@ -23,6 +23,7 @@ float cameraPosX = 0, cameraPosY = 0;
 int WIDTH = 1280;
 int HEIGHT = 720;
 
+
 float cameraSpeedX = 0.1f, cameraSpeedY = 0.001f;
 float playerX = 5.0f;
 float playerY = 1.5f;
@@ -291,7 +292,7 @@ int dir[] = { 0, 90, 180, 270 };
 int currentDir = 0;
 
 // Textures
-GLTexture tex_ground;
+GLTexture tex_ground, tex_vortex;
 
 //=======================================================================
 // Animation Function
@@ -431,6 +432,37 @@ void RenderGround()
 	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
 }
 
+void RenderVortex()
+{
+	glPushMatrix();
+
+	glTranslatef(45, 1.5, 0);
+	glRotated(90 , 0, 1, 0);
+	/*ang = fmod(ang + PORTAL_SPEED, 360);
+	glTranslatef(0, PORTAL_SIDE / 2, 0);
+	glRotatef(ang, 0.0f, 0.0f, 1.0f);*/
+
+	float PORTAL_SIDE = 3.0;
+
+	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
+	glBindTexture(GL_TEXTURE_2D, tex_vortex.texture[0]);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(PORTAL_SIDE / 2, -PORTAL_SIDE / 2, 0);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(-PORTAL_SIDE / 2, -PORTAL_SIDE / 2, 0);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(-PORTAL_SIDE / 2, PORTAL_SIDE / 2, 0);
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(PORTAL_SIDE / 2, PORTAL_SIDE / 2, 0);
+	glEnd();
+	/*glEnable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);*/
+	glEnable(GL_LIGHTING);
+
+	glPopMatrix();
+}
+
 void setupCamera()
 {
 	glMatrixMode(GL_PROJECTION);
@@ -456,10 +488,10 @@ void drawGem(float x, float z, int index , int type) {
 	if (gemExists[index]) {
 		// Draw 5 gems at fixed but scattered locations on the ground
 		glPushMatrix();
-		glTranslated(0, -0.5, 0);
+		glTranslated(0, -0.7, 0);
 		glTranslatef(x, keyPos, z);
 		glRotated(keyRotation, 0, 1, 0);
-		glScalef(0.03, 0.045, 0.03);
+		glScalef(0.02, 0.035, 0.02);
 		model_gem[type].Draw();
 		glPopMatrix();
 	}
@@ -483,6 +515,8 @@ void myDisplay(void)
 
 	// Draw Ground
 	RenderGround();
+	if(keyLoaded && keyLoaded2)
+		RenderVortex();
 
 	// Draw Tree Model
 	/*glPushMatrix();
@@ -1007,11 +1041,11 @@ void myKeyboard(unsigned char button, int x, int y) {
 	}
 	if (checkCollisionKey(playerX, playerY) && !keyTaken) {
 		if (!keyLoaded2 && keyID == 0) {
-			engine->play2D("Sounds/key_pickup.mp3");
+			engine->play2D("Sounds/item-pick-up.mp3");
 			keyTaken = true;
 		}
 		if (!keyLoaded && keyID == 1) {
-			engine->play2D("Sounds/key_pickup.mp3");
+			engine->play2D("Sounds/item-pick-up.mp3");
 			keyTaken = true;
 		}
 	}
@@ -1022,6 +1056,8 @@ void myKeyboard(unsigned char button, int x, int y) {
 			keyLoaded2 = true;
 		else 
 			keyLoaded = true;
+		if(keyLoaded && keyLoaded2)
+			engine->play2D("Sounds/energyflow.wav", false);
 		keyID = -1;
 	}
 	cnt++;
@@ -1168,6 +1204,7 @@ void LoadAssets()
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
+	tex_vortex.Load("Textures/vortex1.bmp");
 	loadBMP(&tex, "Textures/sky.bmp", true);
 }
 
