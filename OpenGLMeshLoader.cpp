@@ -273,6 +273,7 @@ Model_3DS model_explorer[21];
 Model_3DS model_gem;
 Model_3DS model_statue;
 Model_3DS model_gate;
+Model_3DS model_pond;
 Model_3DS model_key, model_key_taken, model_key_loaded;
 
 
@@ -650,6 +651,18 @@ void myDisplay(void)
 
 	glPopMatrix();
 
+	// draw pond
+	glPushMatrix();
+	glTranslatef(40, 0, 7);
+
+	glPushMatrix();
+	//glRotatef(-90, 0, 1, 0);
+	//glScalef(0.5, 1, 0.5);
+	model_pond.Draw();
+	glPopMatrix();
+
+	glPopMatrix();
+
 
 	// Assuming a 30x30 ground area
 	float groundWidth = 30.0;
@@ -1016,6 +1029,7 @@ void LoadAssets()
 	model_explorer[19].Load("Models/explorer/charact19.3DS");
 	model_explorer[20].Load("Models/explorer/charact20.3DS");
 	model_statue.Load("Models/house/column.3DS");
+	model_pond.Load("Models/house/pond.3DS");
 	model_gem.Load("Models/house/diamond.3DS");
 	model_gate.Load("Models/gate/portal.3DS");
 	model_key.Load("Models/key/key4.3DS");
