@@ -16,6 +16,10 @@ float DEG2RAD(float x) {
 	return x * 3.14159265 / 180.0;
 }
 
+bool isPlayerFalling = false;
+float fallingAnimSpeed = 0.1f;
+float playerFallingCoord = 0.0f;
+
 ISoundEngine* engine;
 
 float cameraPosX = 0, cameraPosY = 0;
@@ -193,6 +197,13 @@ public:
 		center = Vector3f(playerX, yLook, playerY);
 	}
 
+	void resetFP()
+	{
+		eye = Vector3f(5.00352, 2.29995, 1.55395);
+		center = Vector3f(5.2176, 2.3146, 0.577245);
+		up = Vector3f(0, 1, 0);
+	}
+
 	void rotateZ(float a)
 	{
 		Vector3f right = up.cross(center - eye).unit();
@@ -281,8 +292,8 @@ Model_3DS model_key, model_key_taken, model_key_loaded;
 Model_3DS model_key2, model_key_taken2, model_key_loaded2;
 
 
-Camera explorerCameraFP = Camera(5.00352, 2.09995, 1.55395,
-	5.04473, 2.11483, 0.554911,
+Camera explorerCameraFP = Camera(5.00352, 2.29995, 1.55395,
+	5.2176, 2.3146, 0.577245,
 	0, 1, 0);
 Camera explorerCameraTP = Camera(playerX - sin(DEG2RAD(cameraPosX)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY)) * 3,
 	playerX, yLook, playerY, 0, 1, 0);
@@ -292,7 +303,7 @@ int dir[] = { 0, 90, 180, 270 };
 int currentDir = 0;
 
 // Textures
-GLTexture tex_ground, tex_vortex;
+GLTexture tex_ground, tex_vortex, tex_sea;
 
 //=======================================================================
 // Animation Function
@@ -432,6 +443,35 @@ void RenderGround()
 	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
 }
 
+void RenderSea()
+{
+	glDisable(GL_LIGHTING);	// Disable lighting 
+
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+	glBindTexture(GL_TEXTURE_2D, tex_sea.texture[0]);	// Bind the ground texture
+
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0);	// Set quad normal direction.
+	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+	glVertex3f(-1000, -1, -1000);
+	glTexCoord2f(5, 0);
+	glVertex3f(1000, -1, -1000);
+	glTexCoord2f(5, 5);
+	glVertex3f(1000, -1, 1000);
+	glTexCoord2f(0, 5);
+	glVertex3f(-1000, -1, 1000);
+	glEnd();
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING);	// Enable lighting again for other entites coming throung the pipeline.
+
+	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
+}
+
 void RenderVortex()
 {
 	glPushMatrix();
@@ -524,6 +564,24 @@ void myDisplay(void)
 	glScalef(0.7, 0.7, 0.7);
 	model_tree.Draw();
 	glPopMatrix();*/
+
+
+	if (!isPlayerFalling && (playerX > 50.5 || playerX < -50.5 || playerY > 50.5 || playerY < -50.5)) {
+		isPlayerFalling = true;
+		engine->play2D("Sounds/fall.wav");
+	}
+
+	if (isPlayerFalling) {
+		playerFallingCoord -= fallingAnimSpeed;
+		if (playerFallingCoord < -5) {
+			isPlayerFalling = false;
+			playerX = 5.0f;
+			playerY = 1.5f;
+			playerFallingCoord = 0.0f;
+			explorerCameraTP.refresh();
+			explorerCameraFP.resetFP();
+		}
+	}
 
 	if (score[0] == 12 && !keyTaken && !keyLoaded2) {
 		glPushMatrix();
@@ -710,7 +768,7 @@ void myDisplay(void)
 
 	// draw player
 	glPushMatrix();
-	glTranslatef(playerX, 0, playerY);
+	glTranslatef(playerX, playerFallingCoord, playerY);
 	glRotated(playerAngle, 0, 1, 0);
 
 	for (int i = 0; i < 21; i++) {
@@ -800,7 +858,7 @@ void myDisplay(void)
 	// Assuming a 30x30 ground area
 	float groundWidth = 30.0;
 	float groundLength = 30.0;
-
+	RenderSea();
 
 	
 
@@ -814,7 +872,7 @@ void myDisplay(void)
 	glBindTexture(GL_TEXTURE_2D, tex);
 	gluQuadricTexture(qobj, true);
 	gluQuadricNormals(qobj, GL_SMOOTH);
-	gluSphere(qobj, 100, 100, 100);
+	gluSphere(qobj, 150, 150, 150);
 	gluDeleteQuadric(qobj);
 
 
@@ -823,10 +881,10 @@ void myDisplay(void)
 
 	glutSwapBuffers();
 
-	/*cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
+	cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
 	cout << explorerCameraFP.center.x << " " << explorerCameraFP.center.y << " " << explorerCameraFP.center.z << '\n';
 	cout << explorerCameraFP.up.x << " " << explorerCameraFP.up.y << " " << explorerCameraFP.up.z << '\n';
-	*/cout << score[0] << " " << score[1] << " " << keyID << "\n";
+	
 }
 //=======================================================================
 // Function to check collision between the player and trees
@@ -968,7 +1026,7 @@ void myKeyboard(unsigned char button, int x, int y) {
 	case 'w':
 		if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z ) && 
 			!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && 
-			!checkCollisionGem(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z)) {
+			!checkCollisionGem(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && !isPlayerFalling) {
 			playerY += moveSpeed * view.z;
 			playerX += moveSpeed * view.x;
 			explorerCameraFP.moveZ(moveSpeed * view.z);
@@ -979,7 +1037,7 @@ void myKeyboard(unsigned char button, int x, int y) {
 	case 'd':
 		if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && 
 			!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
-			!checkCollisionGem(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x)) {
+			!checkCollisionGem(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && !isPlayerFalling) {
 			playerY += moveSpeed * view.x;
 			playerX -= moveSpeed * view.z;
 			explorerCameraFP.moveZ(moveSpeed * view.x);
@@ -990,7 +1048,7 @@ void myKeyboard(unsigned char button, int x, int y) {
 	case 's':
 		if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && 
 			!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
-			!checkCollisionGem(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z)) {
+			!checkCollisionGem(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && !isPlayerFalling) {
 			playerY -= moveSpeed * view.z;
 			playerX -= moveSpeed * view.x;
 			explorerCameraFP.moveZ(-moveSpeed * view.z);
@@ -1001,7 +1059,7 @@ void myKeyboard(unsigned char button, int x, int y) {
 	case 'a':
 		if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && 
 			!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
-			!checkCollisionGem(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x)) {
+			!checkCollisionGem(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && !isPlayerFalling) {
 			playerY -= moveSpeed * view.x;
 			playerX += moveSpeed * view.z;
 			explorerCameraFP.moveZ(-moveSpeed * view.x);
@@ -1204,6 +1262,7 @@ void LoadAssets()
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
+	tex_sea.Load("Textures/sea.bmp");
 	tex_vortex.Load("Textures/vortex1.bmp");
 	loadBMP(&tex, "Textures/sky.bmp", true);
 }
