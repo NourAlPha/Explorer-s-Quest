@@ -270,6 +270,7 @@ Model_3DS model_tree;
 Model_3DS model_explorer[21];
 Model_3DS model_gem;
 Model_3DS model_statue;
+Model_3DS model_gate;
 Model_3DS model_key, model_key_taken, model_key_loaded;
 
 
@@ -409,13 +410,13 @@ void RenderGround()
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);	// Set quad normal direction.
 	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-	glVertex3f(-20, 0, -20);
+	glVertex3f(-50, 0, -50);
 	glTexCoord2f(5, 0);
-	glVertex3f(20, 0, -20);
+	glVertex3f(50, 0, -50);
 	glTexCoord2f(5, 5);
-	glVertex3f(20, 0, 20);
+	glVertex3f(50, 0, 50);
 	glTexCoord2f(0, 5);
-	glVertex3f(-20, 0, 20);
+	glVertex3f(-50, 0, 50);
 	glEnd();
 	glPopMatrix();
 
@@ -501,7 +502,7 @@ void myDisplay(void)
 			treePositions[i * numTrees + j][0] = x;
 			treePositions[i * numTrees + j][1] = z;
 			glTranslatef(x, 0, z);
-			glScalef(2, 2, 2);
+			//glScalef(2, 2, 2);
 			model_tree.Draw();
 			glPopMatrix();
 		}
@@ -554,6 +555,19 @@ void myDisplay(void)
 	glPopMatrix();
 
 
+	// drawe gate
+	glPushMatrix();
+	glTranslatef(25, 0, 0);
+
+	glPushMatrix();
+	glRotatef(-90, 0, 1, 0);
+	//glScalef(0.5, 1, 0.5);
+	model_gate.Draw();
+	glPopMatrix();
+
+	glPopMatrix();
+
+
 	// Assuming a 30x30 ground area
 	float groundWidth = 30.0;
 	float groundLength = 30.0;
@@ -563,8 +577,8 @@ void myDisplay(void)
 		drawGem(gemPositions[i][0], gemPositions[i][1], i);
 	}
 
-	//sky box
-	glPushMatrix();
+	////sky box
+	//glPushMatrix();
 
 	GLUquadricObj* qobj;
 	qobj = gluNewQuadric();
@@ -918,13 +932,14 @@ void LoadAssets()
 	model_explorer[20].Load("Models/explorer/charact20.3DS");
 	model_statue.Load("Models/house/column.3DS");
 	model_gem.Load("Models/house/diamond.3DS");
+	model_gate.Load("Models/gate/portal.3DS");
 	model_key.Load("Models/key/key4.3DS");
 	model_key_loaded.Load("Models/key/key4.3DS");
 	model_key_taken.Load("Models/key/key4.3DS");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
-	loadBMP(&tex, "Textures/sky4.bmp", true);
+	loadBMP(&tex, "Textures/sky.bmp", true);
 }
 
 //=======================================================================
