@@ -5,6 +5,7 @@
 #include <CMATH>
 #include <math.h>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -23,21 +24,16 @@ float playerY = 1.5f;
 float playerAngle = 180.0f; // Initial angle
 float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
 bool keyTaken = false , keyLoaded = false;
+bool keyLoaded2 = false;
 
 // Define the position of the single statue
 float statueX = 18.0; // Update with the actual x position of the statue
 float statueZ = 0.0; // Update with the actual z position of the statue
 
 // Define fixed positions for palm trees (adjust as desired)
-float gemPositions[5][2] = {
-	{-10.0, -10.0},
-	{8.0, -12.0},
-	{-5.0, 6.0},
-	{12.0, 8.0},
-	{-7.0, 15.0}
-};
+float gemPositions[50][3];
 
-bool gemExists[5] = { true, true, true, true, true }; // Array to track gem existence
+vector<bool> gemExists (50 , true); // Array to track gem existence
 
 // Array to hold tree positions
 const int numTrees = 100;
@@ -53,10 +49,11 @@ float objectBoundingRadius = 0.5f;
 
 float yLook = 1.0f;
 
-int score = 0;
+int score[2];
 
 int mouseX = WIDTH/2;
 int mouseY = HEIGHT/2;
+int keyID = -1;
 
 bool isFP = true;
 bool firstTime = true;
@@ -270,11 +267,12 @@ int cameraZoom = 0;
 Model_3DS model_house;
 Model_3DS model_tree[3];
 Model_3DS model_explorer[21];
-Model_3DS model_gem;
+Model_3DS model_gem[2];
 Model_3DS model_statue;
 Model_3DS model_gate;
 Model_3DS model_pond;
 Model_3DS model_key, model_key_taken, model_key_loaded;
+Model_3DS model_key2, model_key_taken2, model_key_loaded2;
 
 
 Camera explorerCameraFP = Camera(5.00352, 2.09995, 1.55395,
@@ -449,13 +447,15 @@ float randomFloat(float min, float max) {
 	return ((float)rand() / RAND_MAX) * (max - min) + min;
 }
 
-void drawGem(float x, float z, int index) {
+void drawGem(float x, float z, int index , int type) {
 	if (gemExists[index]) {
 		// Draw 5 gems at fixed but scattered locations on the ground
 		glPushMatrix();
-		glTranslatef(x, 0, z);
-		glScalef(0.05, 0.05, 0.05);
-		model_gem.Draw();
+		glTranslated(0, -0.5, 0);
+		glTranslatef(x, keyPos, z);
+		glRotated(keyRotation, 0, 1, 0);
+		glScalef(0.03, 0.045, 0.03);
+		model_gem[type].Draw();
 		glPopMatrix();
 	}
 }
@@ -486,15 +486,52 @@ void myDisplay(void)
 	model_tree.Draw();
 	glPopMatrix();*/
 
-	if (score == 5 && !keyTaken && !keyLoaded) {
+	if (score[0] == 12 && !keyTaken && !keyLoaded2) {
 		glPushMatrix();
-		glTranslatef(0, keyPos, 0);
+		glTranslatef(-25, keyPos, -25);
 		glRotatef(keyRotation, 0, 1, 0);
 		//glScalef(0.3, 0.3, 0.3);
 		model_key.Draw();
 		glPopMatrix();
 	}
+
+	if (score[1] == 12 && !keyTaken && !keyLoaded) {
+		glPushMatrix();
+		glTranslatef(-25, keyPos, 25);
+		glRotatef(keyRotation, 0, 1, 0);
+		//glScalef(0.3, 0.3, 0.3);
+		model_key2.Draw();
+		glPopMatrix();
+	}
+
 	float spacing = 8.0; // Adjust the spacing between trees
+
+	// Loop to draw gems
+
+	int counter2 = 0;
+	for (int i = 0, x = -33; i <6; ++i, x += 3) {
+		float y = sqrt(72 - (x + 25) * (x + 25)) - 25;
+		drawGem(x, y, counter2 , 0);
+		gemPositions[counter2][0] = x;
+		gemPositions[counter2++][1] = y;
+		y = -sqrt(72 - (x + 25) * (x + 25)) - 25;
+		drawGem(x, y, counter2 , 0);
+		gemPositions[counter2][0] = x;
+		gemPositions[counter2++][1] = y;
+	}
+
+	for (int i = 0, x = -33; i < 6; ++i, x += 3) {
+		float y = sqrt(72 - (x + 25) * (x + 25)) + 25;
+		drawGem(x, y, counter2 , 1);
+		gemPositions[counter2][0] = x;
+		gemPositions[counter2][2] = 1;
+		gemPositions[counter2++][1] = y;
+		y = -sqrt(72 - (x + 25) * (x + 25)) + 25;
+		drawGem(x, y, counter2 , 1);
+		gemPositions[counter2][0] = x;
+		gemPositions[counter2][2] = 1;
+		gemPositions[counter2++][1] = y;
+	}
 
 	// Loop to draw additional trees
 	int counter = 0;
@@ -583,6 +620,13 @@ void myDisplay(void)
 	model_pond.Draw();
 	glPopMatrix();
 
+	glPushMatrix();
+	//glRotatef(-90, 0, 1, 0);
+	//glScalef(0.5, 1, 0.5);
+	glTranslatef(10, 0, -35);
+	model_pond.Draw();
+	glPopMatrix();
+
 	for (int i = 0, x = 0; i < 6; i++, x += 4)
 	{
 		float y = sqrt(100 - (x - 10) * (x - 10)) - 35;
@@ -604,8 +648,6 @@ void myDisplay(void)
 	}
 
 	glPushMatrix();
-	//glRotatef(-90, 0, 1, 0);
-	//glScalef(0.5, 1, 0.5);
 	glTranslatef(10, 0, -35);
 	model_pond.Draw();
 	glPopMatrix();
@@ -645,7 +687,10 @@ void myDisplay(void)
 		glTranslatef(-0.45, 0.25, 0);
 		glRotatef(90, 1, 0, 0);
 		glRotatef(90, 0, 1, 0);
-		model_key_taken.Draw();
+		if(keyID == 0)
+			model_key_taken.Draw();
+		else
+			model_key_taken2.Draw();
 		glPopMatrix();
 	}
 
@@ -668,7 +713,7 @@ void myDisplay(void)
 		glTranslatef(-1.165, 1.3, 0);
 		glRotatef(180, 1, 0, 0);
 		glRotatef(-50, 0, 0, 1);
-		model_key_loaded.Draw();
+		model_key_loaded2.Draw();
 		glPopMatrix();
 	}
 	glPopMatrix();
@@ -683,7 +728,7 @@ void myDisplay(void)
 	model_statue.Draw();
 	glPopMatrix();
 
-	if (keyLoaded) {
+	if (keyLoaded2) {
 		glPushMatrix();
 		glTranslatef(-1.165, 1.3, 0);
 		glRotatef(180, 1, 0, 0);
@@ -718,9 +763,7 @@ void myDisplay(void)
 	float groundLength = 30.0;
 
 
-	for (int i = 0; i < 5; ++i) {
-		drawGem(gemPositions[i][0], gemPositions[i][1], i);
-	}
+	
 
 	////sky box
 	//glPushMatrix();
@@ -744,7 +787,7 @@ void myDisplay(void)
 	/*cout << explorerCameraFP.eye.x << " " << explorerCameraFP.eye.y << " " << explorerCameraFP.eye.z << '\n';
 	cout << explorerCameraFP.center.x << " " << explorerCameraFP.center.y << " " << explorerCameraFP.center.z << '\n';
 	cout << explorerCameraFP.up.x << " " << explorerCameraFP.up.y << " " << explorerCameraFP.up.z << '\n';
-	cout << score;*/
+	*/cout << score[0] << " " << score[1] << " " << keyID << "\n";
 }
 //=======================================================================
 // Function to check collision between the player and trees
@@ -769,7 +812,7 @@ void myDisplay(void)
 //=======================================================================
 
 	bool checkCollisionGem(float playerX, float playerY) {
-		for (int i = 0; i < 5; ++i) {
+		for (int i = 0; i < 24; ++i) {
 			if (gemExists[i]) {
 				float gemX = gemPositions[i][0];
 				float gemZ = gemPositions[i][1];
@@ -778,7 +821,7 @@ void myDisplay(void)
 				if (distance < playerBoundingRadius + objectBoundingRadius) {
 					// Collision detected, remove the gem
 					gemExists[i] = false;
-					score++;
+					score[(int)gemPositions[i][2]]++;
 					return true;
 				}
 			}
@@ -791,8 +834,18 @@ void myDisplay(void)
 //=======================================================================
 
 	bool checkCollisionKey(float playerX, float playerY) {
-		float distance = sqrt((playerX ) * (playerX) + (playerY) * (playerY));
+		float distance = sqrt((playerX + 25) * (playerX + 25) + (playerY + 25) * (playerY + 25));
 		if (distance < playerBoundingRadius + objectBoundingRadius) {
+			if (score[0] == 12) {
+				keyID = 0;
+			}
+			return true;
+		}
+		distance = sqrt((playerX + 25) * (playerX + 25) + (playerY - 25) * (playerY - 25));
+		if (distance < playerBoundingRadius + objectBoundingRadius) {
+			if (score[1] == 12) {
+				keyID = 1;
+			}
 			return true;
 		}
 		return false; // No collision detected
@@ -815,9 +868,15 @@ void myDisplay(void)
 //=======================================================================
 
 	bool checkCollisionStatue2(float playerX, float playerY) {
-		float distance = sqrt((playerX - 18) * (playerX - 18) + (playerY) * (playerY));
+		float distance = sqrt((playerX - 30) * (playerX - 30) + (playerY - 7) * (playerY - 7));
 		if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
+			if(keyID == 1)
 			return true;
+		}
+		distance = sqrt((playerX - 30) * (playerX - 30) + (playerY + 7) * (playerY + 7));
+		if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
+			if (keyID == 0)
+				return true;
 		}
 		return false; // No collision detected
 	}
@@ -940,12 +999,19 @@ void myKeyboard(unsigned char button, int x, int y) {
 	default:
 		break;
 	}
-	if (checkCollisionKey(playerX, playerY) && score == 5 && !keyLoaded) {
-		keyTaken = true;
+	if (checkCollisionKey(playerX, playerY) && !keyTaken) {
+		if(!keyLoaded2 && keyID == 0)
+			keyTaken = true;
+		if (!keyLoaded && keyID == 1)
+			keyTaken = true;
 	}
 	if (checkCollisionStatue2(playerX, playerY) && keyTaken) {
 		keyTaken = false;
-		keyLoaded = true;
+		if(keyID == 0)
+			keyLoaded2 = true;
+		else 
+			keyLoaded = true;
+		keyID = -1;
 	}
 	cnt++;
 	if (cnt > 20) cnt = 0;
@@ -1079,11 +1145,15 @@ void LoadAssets()
 	model_explorer[20].Load("Models/explorer/charact20.3DS");
 	model_statue.Load("Models/house/column.3DS");
 	model_pond.Load("Models/house/pond.3DS");
-	model_gem.Load("Models/house/diamond.3DS");
+	model_gem[0].Load("Models/gems/gem3.3DS");
+	model_gem[1].Load("Models/gems/gem4.3DS");
 	model_gate.Load("Models/gate/portal.3DS");
-	model_key.Load("Models/key/key4.3DS");
-	model_key_loaded.Load("Models/key/key4.3DS");
-	model_key_taken.Load("Models/key/key4.3DS");
+	model_key.Load("Models/key/redKey.3DS");
+	model_key_loaded.Load("Models/key/redKey.3DS");
+	model_key_taken.Load("Models/key/redKey.3DS");
+	model_key2.Load("Models/key/greenKey.3DS");
+	model_key_loaded2.Load("Models/key/greenKey.3DS");
+	model_key_taken2.Load("Models/key/greenKey.3DS");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
