@@ -25,8 +25,8 @@ ISoundEngine* engine;
 
 float cameraPosX = 0, cameraPosY = 0;
 
-int WIDTH = 1280;
-int HEIGHT = 720;
+int WIDTH = 1920;
+int HEIGHT = 1080;
 
 
 float cameraSpeedX = 0.1f, cameraSpeedY = 0.001f;
@@ -69,7 +69,7 @@ int keyID = -1;
 bool isFP = true;
 bool firstTime = true;
 
-GLuint tex;
+GLuint tex, tex_cave;
 char title[] = "3D Model Loader Sample";
 
 // 3D Projection Options
@@ -508,7 +508,7 @@ void setupCamera()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60, WIDTH / HEIGHT, 0.001, 100);
+	gluPerspective(60, (WIDTH+0.0) / HEIGHT, 0.001, 1000);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -538,111 +538,38 @@ void drawGem(float x, float z, int index , int type) {
 	}
 }
 
+
 //=======================================================================
 // Display Function
 //=======================================================================
 
-void myDisplay1()
-{
-
-	setupCamera();
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
-	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
-
-	// Draw Ground
-	RenderGround();
-	if(keyLoaded && keyLoaded2)
-		RenderVortex();
-
-	// Draw Tree Model
-	/*glPushMatrix();
-	glTranslatef(0, 0, 12);
-	glScalef(0.7, 0.7, 0.7);
-	model_tree.Draw();
-	glPopMatrix();*/
-
-	if (playerX >= 43.5 && playerX <= 46.5 && playerY >= -1 && playerY <= 1 && keyLoaded && keyLoaded2)
-	{
-		firstLevel = false;
-		playerX = 5.0f;
-		playerY = 1.5f;
-		playerFallingCoord = 0.0f;
-		explorerCameraTP.refresh();
-		explorerCameraFP.resetFP();
-		return;
-	}
-
-
-	if (!isPlayerFalling && (playerX > 50.5 || playerX < -50.5 || playerY > 50.5 || playerY < -50.5)) {
-		isPlayerFalling = true;
-		engine->play2D("Sounds/fall.wav");
-	}
-
-	if (isPlayerFalling) {
-		playerFallingCoord -= fallingAnimSpeed;
-		if (playerFallingCoord < -5) {
-			isPlayerFalling = false;
-			playerX = 5.0f;
-			playerY = 1.5f;
-			playerFallingCoord = 0.0f;
-			explorerCameraTP.refresh();
-			explorerCameraFP.resetFP();
-		}
-	}
-
-	if (score[0] == 12 && !keyTaken && !keyLoaded2) {
-		glPushMatrix();
-		glTranslatef(-25, keyPos, -25);
-		glRotatef(keyRotation, 0, 1, 0);
-		//glScalef(0.3, 0.3, 0.3);
-		model_key.Draw();
-		glPopMatrix();
-	}
-
-	if (score[1] == 12 && !keyTaken && !keyLoaded) {
-		glPushMatrix();
-		glTranslatef(-25, keyPos, 25);
-		glRotatef(keyRotation, 0, 1, 0);
-		//glScalef(0.3, 0.3, 0.3);
-		model_key2.Draw();
-		glPopMatrix();
-	}
-
-	float spacing = 8.0; // Adjust the spacing between trees
-
-	// Loop to draw gems
-
+void drawGems() {
 	int counter2 = 0;
-	for (int i = 0, x = -33; i <6; ++i, x += 3) {
+	for (int i = 0, x = -33; i < 6; ++i, x += 3) {
 		float y = sqrt(72 - (x + 25) * (x + 25)) - 25;
-		drawGem(x, y, counter2 , 0);
+		drawGem(x, y, counter2, 0);
 		gemPositions[counter2][0] = x;
 		gemPositions[counter2++][1] = y;
 		y = -sqrt(72 - (x + 25) * (x + 25)) - 25;
-		drawGem(x, y, counter2 , 0);
+		drawGem(x, y, counter2, 0);
 		gemPositions[counter2][0] = x;
 		gemPositions[counter2++][1] = y;
 	}
 
 	for (int i = 0, x = -33; i < 6; ++i, x += 3) {
 		float y = sqrt(72 - (x + 25) * (x + 25)) + 25;
-		drawGem(x, y, counter2 , 1);
+		drawGem(x, y, counter2, 1);
 		gemPositions[counter2][0] = x;
 		gemPositions[counter2][2] = 1;
 		gemPositions[counter2++][1] = y;
 		y = -sqrt(72 - (x + 25) * (x + 25)) + 25;
-		drawGem(x, y, counter2 , 1);
+		drawGem(x, y, counter2, 1);
 		gemPositions[counter2][0] = x;
 		gemPositions[counter2][2] = 1;
 		gemPositions[counter2++][1] = y;
 	}
-
-	// Loop to draw additional trees
+}
+void drawTrees() {
 	int counter = 0;
 	for (int i = 0, x = -40; i < 6; ++i, x += 6) {
 		float y = sqrt(225 - (x + 25) * (x + 25)) - 25;
@@ -722,19 +649,22 @@ void myDisplay1()
 		treePositions[counter++][1] = y;
 	}
 
-	glPushMatrix();
-	//glRotatef(-90, 0, 1, 0);
-	//glScalef(0.5, 1, 0.5);
-	glTranslatef(10, 0, 35);
-	model_pond.Draw();
-	glPopMatrix();
-
-	glPushMatrix();
-	//glRotatef(-90, 0, 1, 0);
-	//glScalef(0.5, 1, 0.5);
-	glTranslatef(10, 0, -35);
-	model_pond.Draw();
-	glPopMatrix();
+	for (int i = 0, x = -45; i < 3; i++, x += 20) {
+		glPushMatrix();
+		glTranslatef(x, 0, 5);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = 5;
+		glPushMatrix();
+		glTranslatef(x, 0, -5);
+		glScalef(2, 3, 2);
+		model_tree[2].Draw();
+		glPopMatrix();
+		treePositions[counter][0] = x;
+		treePositions[counter++][1] = -5;
+	}
 
 	for (int i = 0, x = 0; i < 6; i++, x += 4)
 	{
@@ -755,33 +685,23 @@ void myDisplay1()
 		treePositions[counter][0] = x;
 		treePositions[counter++][1] = y;
 	}
+}
+void drawPonds() {
+	glPushMatrix();
+	glTranslatef(10, 0, 35);
+	model_pond.Draw();
+	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(10, 0, -35);
 	model_pond.Draw();
 	glPopMatrix();
-
-	for (int i = 0, x = -45; i < 3; i++, x += 20) {
-		glPushMatrix();
-		glTranslatef(x, 0, 5);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = 5;
-		glPushMatrix();
-		glTranslatef(x, 0, -5);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = -5;
-	}
-
-	// draw player
+}
+void drawPlayer() {
 	glPushMatrix();
 	glTranslatef(playerX, playerFallingCoord, playerY);
 	glRotated(playerAngle, 0, 1, 0);
+
 
 	for (int i = 0; i < 21; i++) {
 		if (i == cnt) {
@@ -796,7 +716,7 @@ void myDisplay1()
 		glTranslatef(-0.45, 0.25, 0);
 		glRotatef(90, 1, 0, 0);
 		glRotatef(90, 0, 1, 0);
-		if(keyID == 0)
+		if (keyID == 0)
 			model_key_taken.Draw();
 		else
 			model_key_taken2.Draw();
@@ -805,9 +725,8 @@ void myDisplay1()
 
 
 	glPopMatrix();
-
-
-	// draw statue
+}
+void drawStatues() {
 	glPushMatrix();
 	glTranslatef(30, 0, 7);
 
@@ -827,7 +746,7 @@ void myDisplay1()
 	}
 	glPopMatrix();
 
-	// draw statue
+
 	glPushMatrix();
 	glTranslatef(30, 0, -7);
 
@@ -846,41 +765,26 @@ void myDisplay1()
 		glPopMatrix();
 	}
 	glPopMatrix();
-
-
-	// draw gate
+}
+void drawGate() {
 	glPushMatrix();
 	glTranslatef(45, 0, 0);
 
 	glPushMatrix();
 	glRotatef(-90, 0, 1, 0);
-	//glScalef(0.5, 1, 0.5);
 	model_gate.Draw();
 	glPopMatrix();
 
 	glPopMatrix();
 
-	// draw pond
-	glPushMatrix();
-	glTranslatef(40, 0, 7);
-
-	glPopMatrix();
-
-
-	// Assuming a 30x30 ground area
-	float groundWidth = 30.0;
-	float groundLength = 30.0;
-	RenderSea();
-
-	
-
-	////sky box
+}
+void drawSky(GLuint tex) {
 	glPushMatrix();
 
 	GLUquadricObj* qobj;
 	qobj = gluNewQuadric();
 	glTranslated(50, 0, 0);
-	glRotated(90, 1, 0, 1);
+	glRotated(90, 1, 0, 0);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	gluQuadricTexture(qobj, true);
 	gluQuadricNormals(qobj, GL_SMOOTH);
@@ -889,6 +793,84 @@ void myDisplay1()
 
 
 	glPopMatrix();
+}
+
+void myDisplay1()
+{
+
+	setupCamera();
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
+	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+
+	// Draw Ground
+	RenderGround();
+	if(keyLoaded && keyLoaded2)
+		RenderVortex();
+
+	if (playerX >= 43.5 && playerX <= 46.5 && playerY >= -1 && playerY <= 1 && keyLoaded && keyLoaded2)
+	{
+		firstLevel = false;
+		playerX = 5.0f;
+		playerY = 1.5f;
+		playerFallingCoord = 0.0f;
+		explorerCameraTP.refresh();
+		explorerCameraFP.resetFP();
+		return;
+	}
+
+
+	if (!isPlayerFalling && (playerX > 50.5 || playerX < -50.5 || playerY > 50.5 || playerY < -50.5)) {
+		isPlayerFalling = true;
+		engine->play2D("Sounds/fall.wav");
+	}
+
+	if (isPlayerFalling) {
+		playerFallingCoord -= fallingAnimSpeed;
+		if (playerFallingCoord < -5) {
+			isPlayerFalling = false;
+			playerX = 5.0f;
+			playerY = 1.5f;
+			playerFallingCoord = 0.0f;
+			explorerCameraTP.refresh();
+			explorerCameraFP.resetFP();
+		}
+	}
+
+	if (score[0] == 12 && !keyTaken && !keyLoaded2) {
+		glPushMatrix();
+		glTranslatef(-25, keyPos, -25);
+		glRotatef(keyRotation, 0, 1, 0);
+		//glScalef(0.3, 0.3, 0.3);
+		model_key.Draw();
+		glPopMatrix();
+	}
+
+	if (score[1] == 12 && !keyTaken && !keyLoaded) {
+		glPushMatrix();
+		glTranslatef(-25, keyPos, 25);
+		glRotatef(keyRotation, 0, 1, 0);
+		//glScalef(0.3, 0.3, 0.3);
+		model_key2.Draw();
+		glPopMatrix();
+	}
+
+	float spacing = 8.0; // Adjust the spacing between trees
+	drawGems();
+	drawTrees();
+	drawPonds();
+	drawPlayer();
+	drawStatues();
+	drawGate();
+	RenderSea();
+	drawSky(tex);
+
+	////sky box
+	
 
 
 	glutSwapBuffers();
@@ -937,21 +919,9 @@ void myDisplay2()
 
 	// Draw Ground
 	RenderCaveGround();
+	drawSky(tex_cave);
+	drawPlayer();
 
-	glPushMatrix();
-
-	GLUquadricObj* qobj;
-	qobj = gluNewQuadric();
-	glTranslated(50, 0, 0);
-	glRotated(90, 1, 0, 1);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	gluQuadricTexture(qobj, true);
-	gluQuadricNormals(qobj, GL_SMOOTH);
-	gluSphere(qobj, 150, 150, 150);
-	gluDeleteQuadric(qobj);
-
-
-	glPopMatrix();
 	glutSwapBuffers();
 
 }
@@ -1052,39 +1022,6 @@ void myDisplay2()
 //=======================================================================
 // Keyboard Function
 //=======================================================================
-
-	
-/*void moveFunctionHelper(float moveSpeed)
-{
-	if (currentDir == 0) {
-		playerAngle = 0;
-		playerY += moveSpeed;
-		explorerCameraFP.moveZ(moveSpeed);
-		for(int i=0; i<4; i++)
-			explorerCameraTP[i].moveZ(moveSpeed);
-	}
-	else if (currentDir == 1) {
-		playerAngle = 270;
-		playerX -= moveSpeed;
-		explorerCameraFP.moveX(-moveSpeed);
-		for (int i = 0; i < 4; i++)
-			explorerCameraTP[i].moveX(-moveSpeed);
-	}
-	else if (currentDir == 2) {
-		playerAngle = 180;
-		playerY -= moveSpeed;
-		explorerCameraFP.moveZ(-moveSpeed);
-		for (int i = 0; i < 4; i++)
-			explorerCameraTP[i].moveZ(-moveSpeed);
-	}
-	else {
-		playerAngle = 90;
-		playerX += moveSpeed;
-		explorerCameraFP.moveX(moveSpeed);
-		for (int i = 0; i < 4; i++)
-			explorerCameraTP[i].moveX(moveSpeed);
-	}
-}*/
 
 void myKeyboard(unsigned char button, int x, int y) {
 	float moveSpeed = 0.1f; // Adjust the speed as needed
@@ -1336,8 +1273,9 @@ void LoadAssets()
 	tex_ground.Load("Textures/ground.bmp");
 	tex_sea.Load("Textures/sea.bmp");
 	tex_vortex.Load("Textures/vortex1.bmp");
-	tex_cave_ground.Load("Textures/cave_ground.bmp");
-	loadBMP(&tex, "Textures/sky.bmp", true);
+	tex_cave_ground.Load("Textures/ground6.bmp");
+	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
+	loadBMP(&tex_cave, "Textures/hell-sky.bmp", true);
 }
 
 void myDisplay(void)
