@@ -19,6 +19,7 @@ float DEG2RAD(float x) {
 bool isPlayerFalling = false;
 float fallingAnimSpeed = 0.1f;
 float playerFallingCoord = 0.0f;
+bool firstLevel = true;
 
 ISoundEngine* engine;
 
@@ -303,7 +304,7 @@ int dir[] = { 0, 90, 180, 270 };
 int currentDir = 0;
 
 // Textures
-GLTexture tex_ground, tex_vortex, tex_sea;
+GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground;
 
 //=======================================================================
 // Animation Function
@@ -537,11 +538,11 @@ void drawGem(float x, float z, int index , int type) {
 	}
 }
 
-
 //=======================================================================
 // Display Function
 //=======================================================================
-void myDisplay(void)
+
+void myDisplay1()
 {
 
 	setupCamera();
@@ -564,6 +565,17 @@ void myDisplay(void)
 	glScalef(0.7, 0.7, 0.7);
 	model_tree.Draw();
 	glPopMatrix();*/
+
+	if (playerX >= 43.5 && playerX <= 46.5 && playerY >= -1 && playerY <= 1 && keyLoaded && keyLoaded2)
+	{
+		firstLevel = false;
+		playerX = 5.0f;
+		playerY = 1.5f;
+		playerFallingCoord = 0.0f;
+		explorerCameraTP.refresh();
+		explorerCameraFP.resetFP();
+		return;
+	}
 
 
 	if (!isPlayerFalling && (playerX > 50.5 || playerX < -50.5 || playerY > 50.5 || playerY < -50.5)) {
@@ -863,7 +875,7 @@ void myDisplay(void)
 	
 
 	////sky box
-	//glPushMatrix();
+	glPushMatrix();
 
 	GLUquadricObj* qobj;
 	qobj = gluNewQuadric();
@@ -882,6 +894,68 @@ void myDisplay(void)
 	glutSwapBuffers();
 	
 }
+
+void RenderCaveGround()
+{
+	glDisable(GL_LIGHTING);	// Disable lighting 
+
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+	glBindTexture(GL_TEXTURE_2D, tex_cave_ground.texture[0]);	// Bind the ground texture
+
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0);	// Set quad normal direction.
+	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+	glVertex3f(-50, 0, -50);
+	glTexCoord2f(5, 0);
+	glVertex3f(50, 0, -50);
+	glTexCoord2f(5, 5);
+	glVertex3f(50, 0, 50);
+	glTexCoord2f(0, 5);
+	glVertex3f(-50, 0, 50);
+	glEnd();
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING);	// Enable lighting again for other entites coming throung the pipeline.
+
+	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
+}
+
+void myDisplay2()
+{
+	setupCamera();
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
+	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+
+	// Draw Ground
+	RenderCaveGround();
+
+	glPushMatrix();
+
+	GLUquadricObj* qobj;
+	qobj = gluNewQuadric();
+	glTranslated(50, 0, 0);
+	glRotated(90, 1, 0, 1);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	gluQuadricTexture(qobj, true);
+	gluQuadricNormals(qobj, GL_SMOOTH);
+	gluSphere(qobj, 150, 150, 150);
+	gluDeleteQuadric(qobj);
+
+
+	glPopMatrix();
+	glutSwapBuffers();
+
+}
+
 //=======================================================================
 // Function to check collision between the player and trees
 //=======================================================================
@@ -1262,7 +1336,18 @@ void LoadAssets()
 	tex_ground.Load("Textures/ground.bmp");
 	tex_sea.Load("Textures/sea.bmp");
 	tex_vortex.Load("Textures/vortex1.bmp");
+	tex_cave_ground.Load("Textures/cave_ground.bmp");
 	loadBMP(&tex, "Textures/sky.bmp", true);
+}
+
+void myDisplay(void)
+{
+	if (firstLevel) {
+		myDisplay1();
+	}
+	else {
+		myDisplay2();
+	}
 }
 
 //=======================================================================
