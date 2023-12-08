@@ -701,6 +701,7 @@ void drawPlayer() {
 	glPushMatrix();
 	glTranslatef(playerX, playerFallingCoord, playerY);
 	glRotated(playerAngle, 0, 1, 0);
+	glScaled(1.5, 1, 1.5);
 
 
 	for (int i = 0; i < 21; i++) {
@@ -930,7 +931,8 @@ void myDisplay2()
 // Function to check collision between the player and trees
 //=======================================================================
 
-	bool checkCollisionTree(float playerX, float playerY) {
+bool checkCollisionTree(float playerX, float playerY) {
+	if (!firstLevel)return false;
 	for (int i = 0; i < numTrees; ++i) {
 		float treeX = treePositions[i][0];
 		float treeZ = treePositions[i][1];
@@ -949,6 +951,7 @@ void myDisplay2()
 //=======================================================================
 
 	bool checkCollisionGem(float playerX, float playerY) {
+		if (!firstLevel)return false;
 		for (int i = 0; i < 24; ++i) {
 			if (gemExists[i]) {
 				float gemX = gemPositions[i][0];
@@ -972,6 +975,7 @@ void myDisplay2()
 //=======================================================================
 
 	bool checkCollisionKey(float playerX, float playerY) {
+		if (!firstLevel)return false;
 		float distance = sqrt((playerX + 25) * (playerX + 25) + (playerY + 25) * (playerY + 25));
 		if (distance < playerBoundingRadius + objectBoundingRadius) {
 			if (score[0] == 12) {
@@ -994,6 +998,7 @@ void myDisplay2()
 //=======================================================================
 
 	bool checkCollisionStatue(float playerX, float playerY) {
+		if(!firstLevel)return false;
 		float distance = sqrt((playerX - 18) * (playerX - 18) + (playerY) * (playerY));
 		if (distance - 0.1 < playerBoundingRadius + objectBoundingRadius) {
 			return true;
@@ -1006,6 +1011,7 @@ void myDisplay2()
 //=======================================================================
 
 	bool checkCollisionStatue2(float playerX, float playerY) {
+		if (!firstLevel)return false;
 		float distance = sqrt((playerX - 30) * (playerX - 30) + (playerY - 7) * (playerY - 7));
 		if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
 			if(keyID == 1)
