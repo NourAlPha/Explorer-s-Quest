@@ -21,7 +21,7 @@ void handleMovement();
 bool isPlayerFalling = false;
 float fallingAnimSpeed = 0.1f;
 float playerFallingCoord = 0.0f;
-bool firstLevel = true;
+bool firstLevel = false;
 bool moveLeft, moveRight, moveForward, moveBackward;
 
 ISoundEngine* engine;
@@ -33,8 +33,8 @@ int HEIGHT = 1080;
 
 
 float cameraSpeedX = 0.1f, cameraSpeedY = 0.001f;
-float playerX = 5.0f;
-float playerY = 1.5f;
+float playerX = 50.0f;
+float playerY = 0.0f;
 float playerAngle = 180.0f; // Initial angle
 float rotatePlayerKeyboard = 0;
 float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
@@ -298,7 +298,8 @@ Model_3DS model_gate;
 Model_3DS model_pond;
 Model_3DS model_key, model_key_taken, model_key_loaded;
 Model_3DS model_key2, model_key_taken2, model_key_loaded2;
-Model_3DS model_rock[6];
+Model_3DS model_rock[10];
+Model_3DS model_coin[3];
 
 
 Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
@@ -787,7 +788,7 @@ void drawGate() {
 	glPopMatrix();
 
 }
-void drawSky(GLuint tex) {
+void drawSky(GLuint tex , int radius) {
 	glPushMatrix();
 
 	GLUquadricObj* qobj;
@@ -797,7 +798,7 @@ void drawSky(GLuint tex) {
 	glBindTexture(GL_TEXTURE_2D, tex);
 	gluQuadricTexture(qobj, true);
 	gluQuadricNormals(qobj, GL_SMOOTH);
-	gluSphere(qobj, 150, 150, 150);
+	gluSphere(qobj, radius, radius, radius);
 	gluDeleteQuadric(qobj);
 
 
@@ -817,13 +818,13 @@ void RenderCaveGround()
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);	// Set quad normal direction.
 	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-	glVertex3f(-50, 0, -50);
+	glVertex3f(-300, -2, -300);
 	glTexCoord2f(5, 0);
-	glVertex3f(50, 0, -50);
+	glVertex3f(300, -2, -300);
 	glTexCoord2f(5, 5);
-	glVertex3f(50, 0, 50);
+	glVertex3f(300, -2, 300);
 	glTexCoord2f(0, 5);
-	glVertex3f(-50, 0, 50);
+	glVertex3f(-300, -2, 300);
 	glEnd();
 	glPopMatrix();
 
@@ -832,6 +833,151 @@ void RenderCaveGround()
 	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
 }
 void drawRock(){
+	glPushMatrix();
+	glTranslated(50, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(40, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(23, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(12, -0.25, 0);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -0.25, 7);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -0.25, 20);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -3.2, 30);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[2].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -3.2, 70);
+	glRotated(180, 0, 1, 0);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[2].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-20, -3.2, 50);
+	glRotated(90, 0, 1, 0);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[2].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(20, -3.2, 50);
+	glRotated(-90, 0, 1, 0);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[2].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -0.25, -7);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -0.25, -20);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -3.2, 50);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[3].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -3.2, 45);
+	//glScaled(0.2, 0.2, 0.2);
+	model_rock[4].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(7, -3.2, 50);
+	glRotated(-90, 0, 1, 0);
+	//glScaled(0.2, 0.2, 0.2);
+	model_rock[4].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-4, -3.2, 50);
+	glRotated(90, 0, 1, 0);
+	//glScaled(0.2, 0.2, 0.2);
+	model_rock[4].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -3.2, 55);
+	glRotated(180, 0, 1, 0);
+	//glScaled(0.2, 0.2, 0.2);
+	model_rock[4].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-37, -0.25, 50);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-47, -0.25, 50);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-62, -0.8, 50);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[6].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-74, -0.8, 50);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[5].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-86, -0.8, 50);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[7].Draw();
+	glPopMatrix();
+
+}
+void drawCoins() {
+	glPushMatrix();
+	glTranslated(50, 1, 0);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[0].Draw();
+	glPopMatrix();
 }
 
 void myDisplay1()
@@ -908,7 +1054,7 @@ void myDisplay1()
 	drawStatues();
 	drawGate();
 	RenderSea();
-	drawSky(tex);
+	drawSky(tex , 150);
 
 	glutSwapBuffers();
 	
@@ -937,10 +1083,10 @@ void myDisplay2()
 
 	// Draw Ground
 	RenderCaveGround();
-	drawSky(tex_cave);
+	drawSky(tex_cave , 300);
 	drawPlayer();
 	drawRock();
-
+	drawCoins();
 	glutSwapBuffers();
 
 }
@@ -1052,7 +1198,7 @@ bool checkCollisionTree(float playerX, float playerY) {
 // Keyboard Function
 //=======================================================================
 
-	void handleMovement()
+void handleMovement()
 	{
 		float moveSpeed = 0.05f; // Adjust the speed as needed
 		float rotationAngle = 5.0f; // Adjust the rotation angle as needed
@@ -1372,12 +1518,18 @@ void LoadAssets()
 	model_key2.Load("Models/key/greenKey.3DS");
 	model_key_loaded2.Load("Models/key/greenKey.3DS");
 	model_key_taken2.Load("Models/key/greenKey.3DS");
-	/*model_rock[0].Load("Models/rocks/rock0.3DS");
-	model_rock[1].Load("Models/rocks/rock1.3DS");
-	model_rock[2].Load("Models/rocks/rock2.3DS");
-	model_rock[3].Load("Models/rocks/rock3.3DS");
-	model_rock[4].Load("Models/rocks/rock4.3DS");
-	model_rock[5].Load("Models/rocks/rock5.3DS");*/
+	model_rock[0].Load("Models/rocks/rock3/rock1.3DS");
+	model_rock[1].Load("Models/rocks/rock2/rock2.3DS");
+	model_rock[2].Load("Models/rocks/rock5/rock1.3DS");
+	model_rock[3].Load("Models/rocks/rock6/rock3.3DS");
+	model_rock[4].Load("Models/rocks/rock4/rock2.3DS");
+	model_coin[0].Load("Models/coins/coin_1.3DS");
+	model_coin[1].Load("Models/coins/coin_2.3DS");
+	model_coin[2].Load("Models/coins/coin_3.3DS");
+	model_rock[5].Load("Models/rocks/rock7/rock1.3DS");
+	model_rock[6].Load("Models/rocks/rock7/rock2.3DS");
+	model_rock[7].Load("Models/rocks/rock7/rock3.3DS");
+
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
