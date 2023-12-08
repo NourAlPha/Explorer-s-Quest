@@ -34,6 +34,7 @@ float playerX = 5.0f;
 float playerY = 1.5f;
 float playerAngle = 180.0f; // Initial angle
 float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
+float curRock = 0;
 bool keyTaken = false , keyLoaded = false;
 bool keyLoaded2 = false;
 
@@ -68,6 +69,7 @@ int keyID = -1;
 
 bool isFP = true;
 bool firstTime = true;
+
 
 GLuint tex, tex_cave;
 char title[] = "3D Model Loader Sample";
@@ -291,6 +293,7 @@ Model_3DS model_gate;
 Model_3DS model_pond;
 Model_3DS model_key, model_key_taken, model_key_loaded;
 Model_3DS model_key2, model_key_taken2, model_key_loaded2;
+Model_3DS model_rock[6];
 
 
 Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
@@ -795,6 +798,36 @@ void drawSky(GLuint tex) {
 
 	glPopMatrix();
 }
+void RenderCaveGround()
+{
+	glDisable(GL_LIGHTING);	// Disable lighting 
+
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+	glBindTexture(GL_TEXTURE_2D, tex_cave_ground.texture[0]);	// Bind the ground texture
+
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0);	// Set quad normal direction.
+	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+	glVertex3f(-50, 0, -50);
+	glTexCoord2f(5, 0);
+	glVertex3f(50, 0, -50);
+	glTexCoord2f(5, 5);
+	glVertex3f(50, 0, 50);
+	glTexCoord2f(0, 5);
+	glVertex3f(-50, 0, 50);
+	glEnd();
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING);	// Enable lighting again for other entites coming throung the pipeline.
+
+	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
+}
+void drawRock(){
+}
 
 void myDisplay1()
 {
@@ -870,47 +903,16 @@ void myDisplay1()
 	RenderSea();
 	drawSky(tex);
 
-	////sky box
-	
-
-
 	glutSwapBuffers();
 	
 }
 
-void RenderCaveGround()
-{
-	glDisable(GL_LIGHTING);	// Disable lighting 
 
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
-
-	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
-
-	glBindTexture(GL_TEXTURE_2D, tex_cave_ground.texture[0]);	// Bind the ground texture
-
-	glPushMatrix();
-	glBegin(GL_QUADS);
-	glNormal3f(0, 1, 0);	// Set quad normal direction.
-	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-	glVertex3f(-50, 0, -50);
-	glTexCoord2f(5, 0);
-	glVertex3f(50, 0, -50);
-	glTexCoord2f(5, 5);
-	glVertex3f(50, 0, 50);
-	glTexCoord2f(0, 5);
-	glVertex3f(-50, 0, 50);
-	glEnd();
-	glPopMatrix();
-
-	glEnable(GL_LIGHTING);	// Enable lighting again for other entites coming throung the pipeline.
-
-	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
-}
 
 void myDisplay2()
 {
 	setupCamera();
-
+	curRock += 0.03;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
@@ -922,9 +924,15 @@ void myDisplay2()
 	RenderCaveGround();
 	drawSky(tex_cave);
 	drawPlayer();
+	drawRock();
 
 	glutSwapBuffers();
 
+}
+
+void myDisplay(void)
+{
+	myDisplay2();
 }
 
 //=======================================================================
@@ -1274,24 +1282,20 @@ void LoadAssets()
 	model_key2.Load("Models/key/greenKey.3DS");
 	model_key_loaded2.Load("Models/key/greenKey.3DS");
 	model_key_taken2.Load("Models/key/greenKey.3DS");
+	/*model_rock[0].Load("Models/rocks/rock0.3DS");
+	model_rock[1].Load("Models/rocks/rock1.3DS");
+	model_rock[2].Load("Models/rocks/rock2.3DS");
+	model_rock[3].Load("Models/rocks/rock3.3DS");
+	model_rock[4].Load("Models/rocks/rock4.3DS");
+	model_rock[5].Load("Models/rocks/rock5.3DS");*/
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
 	tex_sea.Load("Textures/sea.bmp");
 	tex_vortex.Load("Textures/vortex1.bmp");
-	tex_cave_ground.Load("Textures/ground6.bmp");
+	tex_cave_ground.Load("Textures/lava1.bmp");
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 	loadBMP(&tex_cave, "Textures/hell-sky.bmp", true);
-}
-
-void myDisplay(void)
-{
-	if (firstLevel) {
-		myDisplay1();
-	}
-	else {
-		myDisplay2();
-	}
 }
 
 //=======================================================================
