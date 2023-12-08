@@ -16,10 +16,13 @@ float DEG2RAD(float x) {
 	return x * 3.14159265 / 180.0;
 }
 
+void handleMovement();
+
 bool isPlayerFalling = false;
 float fallingAnimSpeed = 0.1f;
 float playerFallingCoord = 0.0f;
 bool firstLevel = true;
+bool moveLeft, moveRight, moveForward, moveBackward;
 
 ISoundEngine* engine;
 
@@ -33,10 +36,12 @@ float cameraSpeedX = 0.1f, cameraSpeedY = 0.001f;
 float playerX = 5.0f;
 float playerY = 1.5f;
 float playerAngle = 180.0f; // Initial angle
+float rotatePlayerKeyboard = 0;
 float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
 float curRock = 0;
 bool keyTaken = false , keyLoaded = false;
 bool keyLoaded2 = false;
+float acceleration = 0;
 
 // Define the position of the single statue
 float statueX = 18.0; // Update with the actual x position of the statue
@@ -703,12 +708,12 @@ void drawPonds() {
 void drawPlayer() {
 	glPushMatrix();
 	glTranslatef(playerX, playerFallingCoord, playerY);
-	glRotated(playerAngle, 0, 1, 0);
+	glRotated(playerAngle + rotatePlayerKeyboard, 0, 1, 0);
 	glScaled(1.5, 1, 1.5);
 
 
 	for (int i = 0; i < 21; i++) {
-		if (i == cnt) {
+		if (i == cnt/4) {
 			glPushMatrix();
 			glScaled(0.15, 0.23, 0.15);
 			model_explorer[i].Draw();
@@ -845,6 +850,8 @@ void myDisplay1()
 	RenderGround();
 	if(keyLoaded && keyLoaded2)
 		RenderVortex();
+	
+	handleMovement();
 
 	if (playerX >= 43.5 && playerX <= 46.5 && playerY >= -1 && playerY <= 1 && keyLoaded && keyLoaded2)
 	{
@@ -919,6 +926,14 @@ void myDisplay2()
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+
+	handleMovement();
+	if (playerFallingCoord <= 0 && acceleration <= 0)
+		acceleration = 0;
+	else
+		acceleration -= 0.004;
+	
+	playerFallingCoord += acceleration;
 
 	// Draw Ground
 	RenderCaveGround();
@@ -1037,56 +1052,113 @@ bool checkCollisionTree(float playerX, float playerY) {
 // Keyboard Function
 //=======================================================================
 
+	void handleMovement()
+	{
+		float moveSpeed = 0.05f; // Adjust the speed as needed
+		float rotationAngle = 5.0f; // Adjust the rotation angle as needed
+		Vector3f view = explorerCameraTP.center - explorerCameraTP.eye;
+
+		if (moveForward || moveBackward || moveRight || moveLeft) {
+			cnt++;
+			if (cnt > 80) cnt = 0;
+		}
+
+		if (moveForward && moveLeft) {
+			rotatePlayerKeyboard = 45;
+		}
+		else if (moveForward && moveRight) {
+			rotatePlayerKeyboard = -45;
+		}
+		else if (moveForward) {
+			rotatePlayerKeyboard = 0;
+		}
+		else if (moveBackward && moveLeft) {
+			rotatePlayerKeyboard = 135;
+		}
+		else if (moveBackward && moveRight) {
+			rotatePlayerKeyboard = -135;
+		}
+		else if (moveBackward) {
+			rotatePlayerKeyboard = 180;
+		}
+		else if (moveLeft) {
+			rotatePlayerKeyboard = 90;
+		}
+		else if (moveRight) {
+			rotatePlayerKeyboard = -90;
+		}
+		else {
+			rotatePlayerKeyboard = 0;
+		}
+
+		if (moveForward) {
+			if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
+				!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
+				!checkCollisionGem(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && !isPlayerFalling) {
+				playerY += moveSpeed * view.z;
+				playerX += moveSpeed * view.x;
+				explorerCameraFP.moveZ(moveSpeed * view.z);
+				explorerCameraFP.moveX(moveSpeed * view.x);
+				explorerCameraTP.refresh();
+			}
+		}
+		else if(moveBackward){
+			if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
+				!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
+				!checkCollisionGem(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && !isPlayerFalling) {
+				playerY -= moveSpeed * view.z;
+				playerX -= moveSpeed * view.x;
+				explorerCameraFP.moveZ(-moveSpeed * view.z);
+				explorerCameraFP.moveX(-moveSpeed * view.x);
+				explorerCameraTP.refresh();
+			}
+		}
+		if (moveRight) {
+			if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
+				!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
+				!checkCollisionGem(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && !isPlayerFalling) {
+				playerY += moveSpeed * view.x;
+				playerX -= moveSpeed * view.z;
+				explorerCameraFP.moveZ(moveSpeed * view.x);
+				explorerCameraFP.moveX(-moveSpeed * view.z);
+				explorerCameraTP.refresh();
+			}
+		}
+		else if(moveLeft){
+			if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
+				!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
+				!checkCollisionGem(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && !isPlayerFalling) {
+				playerY -= moveSpeed * view.x;
+				playerX += moveSpeed * view.z;
+				explorerCameraFP.moveZ(-moveSpeed * view.x);
+				explorerCameraFP.moveX(moveSpeed * view.z);
+				explorerCameraTP.refresh();
+			}
+		}
+	}
+
 void myKeyboard(unsigned char button, int x, int y) {
 	float moveSpeed = 0.1f; // Adjust the speed as needed
-	float rotationAngle = 5.0f; // Adjust the rotation angle as needed
 	
-	Vector3f view = explorerCameraTP.center - explorerCameraTP.eye;
 
 	switch (button) {
-	case 'w':
-		if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z ) && 
-			!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && 
-			!checkCollisionGem(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && !isPlayerFalling) {
-			playerY += moveSpeed * view.z;
-			playerX += moveSpeed * view.x;
-			explorerCameraFP.moveZ(moveSpeed * view.z);
-			explorerCameraFP.moveX(moveSpeed * view.x);
-			explorerCameraTP.refresh();
+	case ' ':
+		if (acceleration == 0) {
+			engine->play2D("Sounds/jumppp22.ogg");
+			acceleration = 0.13;
 		}
+		break;
+	case 'w':
+		moveForward = true;
 		break;
 	case 'd':
-		if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && 
-			!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
-			!checkCollisionGem(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && !isPlayerFalling) {
-			playerY += moveSpeed * view.x;
-			playerX -= moveSpeed * view.z;
-			explorerCameraFP.moveZ(moveSpeed * view.x);
-			explorerCameraFP.moveX(-moveSpeed * view.z);
-			explorerCameraTP.refresh();
-		}
+		moveRight = true;
 		break;
 	case 's':
-		if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && 
-			!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
-			!checkCollisionGem(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && !isPlayerFalling) {
-			playerY -= moveSpeed * view.z;
-			playerX -= moveSpeed * view.x;
-			explorerCameraFP.moveZ(-moveSpeed * view.z);
-			explorerCameraFP.moveX(-moveSpeed * view.x);
-			explorerCameraTP.refresh();
-		}
+		moveBackward = true;
 		break;
 	case 'a':
-		if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && 
-			!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
-			!checkCollisionGem(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && !isPlayerFalling) {
-			playerY -= moveSpeed * view.x;
-			playerX += moveSpeed * view.z;
-			explorerCameraFP.moveZ(-moveSpeed * view.x);
-			explorerCameraFP.moveX(moveSpeed * view.z);
-			explorerCameraTP.refresh();
-		}
+		moveLeft = true;
 		break;
 	case '1':
 		isFP = true;
@@ -1139,8 +1211,26 @@ void myKeyboard(unsigned char button, int x, int y) {
 			engine->play2D("Sounds/energyflow.wav", false);
 		keyID = -1;
 	}
-	cnt++;
-	if (cnt > 20) cnt = 0;
+	glutPostRedisplay();
+}
+
+void myKeyboardUp(unsigned char button, int x, int y) {
+	switch (button) {
+	case 'w':
+		moveForward = false;
+		break;
+	case 'd':
+		moveRight = false;
+		break;
+	case 's':
+		moveBackward = false;
+		break;
+	case 'a':
+		moveLeft = false;
+		break;
+	default:
+		break;
+	}
 	glutPostRedisplay();
 }
 
@@ -1321,6 +1411,7 @@ void main(int argc, char** argv)
 	glutDisplayFunc(myDisplay);
 
 	glutKeyboardFunc(myKeyboard);
+	glutKeyboardUpFunc(myKeyboardUp);
 
 	glutSpecialFunc(Special);
 
