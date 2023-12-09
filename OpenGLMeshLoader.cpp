@@ -74,6 +74,8 @@ int keyID = -1;
 
 bool isFP = true;
 bool firstTime = true;
+float coinPositions[50][3];
+int cntCoins = 0;
 
 
 GLuint tex, tex_cave;
@@ -299,7 +301,7 @@ Model_3DS model_pond;
 Model_3DS model_key, model_key_taken, model_key_loaded;
 Model_3DS model_key2, model_key_taken2, model_key_loaded2;
 Model_3DS model_rock[10];
-Model_3DS model_coin[3];
+Model_3DS model_coin[4];
 
 
 Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
@@ -870,6 +872,42 @@ void drawRock(){
 	glPopMatrix();
 
 	glPushMatrix();
+	glTranslated(-7, -0.25, 0);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-25, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-35, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-45, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-55, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-65, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
 	glTranslated(2, -3.2, 30);
 	glScaled(0.2, 0.2, 0.2);
 	model_rock[2].Draw();
@@ -971,13 +1009,113 @@ void drawRock(){
 	model_rock[7].Draw();
 	glPopMatrix();
 
+	glPushMatrix();
+	glTranslated(-105, -0.25, 50);
+	glScaled(1, 0.2, 1);
+	model_rock[1].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-50, 0, 100);
+	glScaled(2, 2, 2);
+	model_rock[2].Draw();
+	glPopMatrix();
+
 }
 void drawCoins() {
+	cntCoins = 0;
+	for (int i = 0; i < 3; i++) {
+		glPushMatrix();
+		glTranslated(50 - i * 5, 1.5, 0);
+		glScaled(0.5, 0.5, 0.5);
+		model_coin[3].Draw();
+		glPopMatrix();
+		coinPositions[cntCoins][0] = 50 - i * 5;
+		coinPositions[cntCoins++][1] = 0;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		glPushMatrix();
+		glTranslated(25 - i * 5, 1.5, 0);
+		glScaled(0.5, 0.5, 0.5);
+		model_coin[3].Draw();
+		glPopMatrix();
+		coinPositions[cntCoins][0] = 25 - i * 5;
+		coinPositions[cntCoins++][1] = 0;
+	}
+
 	glPushMatrix();
-	glTranslated(50, 1, 0);
+	glTranslated(12, 1.5, 0);
 	glScaled(0.5, 0.5, 0.5);
-	model_coin[0].Draw();
+	model_coin[3].Draw();
 	glPopMatrix();
+	coinPositions[cntCoins][0] = 12;
+	coinPositions[cntCoins++][1] = 0;
+
+	glPushMatrix();
+	glTranslated(2, 1.5, 7);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = 2;
+	coinPositions[cntCoins++][1] = 7;
+
+	glPushMatrix();
+	glTranslated(2, 1.5, 20);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = 2;
+	coinPositions[cntCoins++][1] = 20;
+
+	glPushMatrix();
+	glTranslated(2, 1.5, 71);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = 2;
+	coinPositions[cntCoins++][1] = 71;
+
+	glPushMatrix();
+	glTranslated(-7, 1.5, 69);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = -7;
+	coinPositions[cntCoins++][1] = 69;
+
+	glPushMatrix();
+	glTranslated(11, 1.5, 69.5);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = 9;
+	coinPositions[cntCoins++][1] = 70;
+
+	glPushMatrix();
+	glTranslated(-20.5, 1.5, 50);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = -20.5;
+	coinPositions[cntCoins++][1] = 50;
+
+	glPushMatrix();
+	glTranslated(-19, 1.5, 41);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = -19;
+	coinPositions[cntCoins++][1] = 41;
+
+	glPushMatrix();
+	glTranslated(-19.5, 1.5, 59);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = -19.5;
+	coinPositions[cntCoins++][1] = 59;
+
 }
 
 void myDisplay1()
@@ -1526,6 +1664,7 @@ void LoadAssets()
 	model_coin[0].Load("Models/coins/coin_1.3DS");
 	model_coin[1].Load("Models/coins/coin_2.3DS");
 	model_coin[2].Load("Models/coins/coin_3.3DS");
+	model_coin[3].Load("Models/coins/New Folder (2)/coin01.3ds");
 	model_rock[5].Load("Models/rocks/rock7/rock1.3DS");
 	model_rock[6].Load("Models/rocks/rock7/rock2.3DS");
 	model_rock[7].Load("Models/rocks/rock7/rock3.3DS");
