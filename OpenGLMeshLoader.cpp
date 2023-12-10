@@ -16,6 +16,8 @@ float DEG2RAD(float x) {
 	return x * 3.14159265 / 180.0;
 }
 
+#define EPSILON 0.00000001
+
 void handleMovement();
 
 bool isPlayerFalling = false;
@@ -25,6 +27,10 @@ bool firstLevel = false;
 bool moveLeft, moveRight, moveForward, moveBackward;
 float resetJumpDelay = 40;
 float jumpDelay = resetJumpDelay;
+float teleportPosX = -105, teleportPosY = 58;
+float teleportWidth = 5, teleportHeight = 5;
+bool sailingRock = false;
+float sailingRockX = 78.5, sailingRockY = 108.1;
 
 ISoundEngine* engine;
 
@@ -42,9 +48,53 @@ int statueFallDir[50];
 int cntRock;
 float rockPos[50][4];
 
+struct Point {
+	float x, y;
+	Point(float _x = 0, float _y = 0) {
+		x = _x;
+		y = _y;
+	}
+};
+
+bool isVertexInsidePolygon(const Point& vertex, const std::vector<Point>& polygon) {
+	// Check if a vertex is inside a polygon using the point-in-polygon algorithm.
+	// This is the same algorithm we discussed earlier for point-in-polygon testing.
+
+	int n = polygon.size();
+	double x = vertex.x;
+	double y = vertex.y;
+	bool inside = false;
+
+	for (int i = 0; i < n; i++) {
+		double x1 = polygon[i].x;
+		double y1 = polygon[i].y;
+		double x2 = polygon[(i + 1) % n].x;
+		double y2 = polygon[(i + 1) % n].y;
+
+		if ((y1 > y) != (y2 > y) && x < (x2 - x1) * (y - y1) / (y2 - y1) + x1) {
+			inside = !inside;
+		}
+	}
+
+	return inside;
+}
+
+bool doPolygonsIntersect(const std::vector<Point>& polygonA, const std::vector<Point>& polygonB) {
+	for (int i = 0; i < polygonA.size(); i++) {
+		if (isVertexInsidePolygon(polygonA[i], polygonB)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+vector<Point> polygon1 = {Point(80, 97), Point(80, 118), Point(-50, 116), Point(-50, 79)};
+vector<Point> polygon2 = {Point(-50, 82), Point(-50, 116), Point(-126, 114), Point(-126, 92)};
+
 float cameraSpeedX = 0.1f, cameraSpeedY = 0.001f;
 float playerX = 50;
-float playerY = 0.0;
+float playerY = 0;
 float playerAngle = 180.0f; // Initial angle
 float rotatePlayerKeyboard = 0;
 float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
@@ -53,6 +103,7 @@ float curRock = 0;
 bool keyTaken = false , keyLoaded = false;
 bool keyLoaded2 = false;
 float acceleration = 0;
+
 
 // Define the position of the single statue
 float statueX = 18.0; // Update with the actual x position of the statue
@@ -1269,19 +1320,23 @@ void drawRock(){
 	glPushMatrix();
 	glTranslated(-50, 0, 100);
 	glScaled(2.1, 2.1, 2.1);
-	model_rock[2].Draw();
+	model_rock[8].Draw();
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslated(75, -0.8, 120);
+	glTranslated(sailingRockX, -0.8, sailingRockY);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[5].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = sailingRockX;
+	rockPos[cntRock][1] = sailingRockY;
+	rockPos[cntRock][2] = 1.85;
+	rockPos[cntRock++][3] = 2.25;
 
 	cntStatue = 0;
 	statuePos[cntStatue][0] = 45;
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
-	statuePos[cntStatue][2] = 120;
+	statuePos[cntStatue][2] = 114;
 	statueFallDir[cntStatue] = -1;
 	glPushMatrix();
 	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
@@ -1293,11 +1348,11 @@ void drawRock(){
 
 	statuePos[cntStatue][0] = 15;
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
-	statuePos[cntStatue][2] = 90;
+	statuePos[cntStatue][2] = 91.3;
 	statueFallDir[cntStatue] = 1;
 	glPushMatrix();
 	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
-	glScaled(3, 3, 3);
+	glScaled(3.7, 3.7, 3.7);
 	glRotated(90, 0, 1, 0);
 	glRotated(statueAngle[cntStatue++], 0, 0, 1);
 	model_statue.Draw();
@@ -1305,11 +1360,11 @@ void drawRock(){
 
 	statuePos[cntStatue][0] = -20;
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
-	statuePos[cntStatue][2] = 105;
+	statuePos[cntStatue][2] = 112;
 	statueFallDir[cntStatue] = -1;
 	glPushMatrix();
 	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
-	glScaled(3, 3, 3);
+	glScaled(4, 4, 4);
 	glRotated(90, 0, 1, 0);
 	glRotated(statueAngle[cntStatue++], 0, 0, 1);
 	model_statue.Draw();
@@ -1317,11 +1372,11 @@ void drawRock(){
 	
 	statuePos[cntStatue][0] = -55;
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
-	statuePos[cntStatue][2] = 77;
+	statuePos[cntStatue][2] = 87.8;
 	statueFallDir[cntStatue] = 1;
 	glPushMatrix();
 	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
-	glScaled(3, 3, 3);
+	glScaled(4, 4, 4);
 	glRotated(90, 0, 1, 0);
 	glRotated(statueAngle[cntStatue++], 0, 0, 1);
 	model_statue.Draw();
@@ -1345,6 +1400,10 @@ void drawRock(){
 	glRotated(10, 0, 1, 0);
 	model_rock[1].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -142;
+	rockPos[cntRock][1] = 100;
+	rockPos[cntRock][2] = 2.4 * 5;
+	rockPos[cntRock++][3] = 2.4 * 5;
 
 }
 void drawCoin(float x, float z , Model_3DS coin) {
@@ -1433,7 +1492,7 @@ void fallPlayer() {
 
 	playerFallingCoord -= 0.02;
 
-	if (playerFallingCoord <= -5) {
+	if (playerFallingCoord <= -3) {
 		playerFallingCoord = 0;
 		playerX = 50;
 		playerY = 0;
@@ -1558,7 +1617,42 @@ void myDisplay1()
 	
 }
 
+void drawSquare(float x, float y, float width, float height)
+{
+	glPushMatrix();
+	glTranslatef(x, 1, y);
+	glBegin(GL_QUADS);
+	glVertex3f(0, 0, 0);
+	glVertex3f(width, 0, 0);
+	glVertex3f(width, 0, height);
+	glVertex3f(0, 0, height);
+	glEnd();
+	glPopMatrix();
+}
 
+void drawSquare() {
+
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glVertex3f(80, 0, 97);
+	glVertex3f(80, 0, 118);
+	glVertex3f(-50, 0, 116);
+	glVertex3f(-50, 0, 79);
+	glEnd();
+	glPopMatrix();
+}
+
+void drawSquare2()
+{
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glVertex3f(-50, 0, 82);
+	glVertex3f(-50, 0, 116);
+	glVertex3f(-126, 0, 114);
+	glVertex3f(-126, 0, 92);
+	glEnd();
+	glPopMatrix();
+}
 
 void myDisplay2()
 {
@@ -1587,11 +1681,26 @@ void myDisplay2()
 		acceleration = 0;
 	else
 		acceleration -= 0.004;
+
+	if (teleportPosX - teleportWidth <= playerX && playerX <= teleportPosX + teleportWidth
+		&& teleportPosY - teleportHeight <= playerY && playerY <= teleportPosY + teleportHeight) {
+		sailingRock = true;
+		playerX = sailingRockX;
+		playerY = sailingRockY;
+		explorerCameraTP.refresh();
+		explorerCameraFP.resetFP();
+	}
+
+	if (sailingRock) {
+		sailingRockX = playerX;
+		sailingRockY = playerY;
+	}
 	
 	playerFallingCoord += acceleration;
 
-	playerIsFalling = false;
-	handleFallPlayer();
+	playerIsFalling = playerFallingCoord <= 0;
+	handleFallPlayer();	
+
 
 	jumpDelay -= 0.5;
 	if (jumpDelay < 0)jumpDelay = 0;
@@ -1706,7 +1815,17 @@ bool checkCollisionTree(float playerX, float playerY) {
 		return false; // No collision detected
 	}
 
+	bool checkOkSailing(float x, float y)
+	{
+		if (firstLevel)return true;
+		if (!sailingRock)return true;
+		vector<Point> player = { Point(x, y) };
+		cout << "HERE: " << doPolygonsIntersect(player, polygon1) << " " << doPolygonsIntersect(player, polygon2) << '\n';
+		if(doPolygonsIntersect(player, polygon1) || doPolygonsIntersect(player, polygon2))
+			return true;
+		return false;
 
+	}
 
 //=======================================================================
 // Keyboard Function
@@ -1752,7 +1871,8 @@ void handleMovement()
 		}
 
 		if (moveForward) {
-			if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
+			if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && 
+				checkOkSailing(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
 				!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && !playerIsFalling &&
 				!checkCollisionGem(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && !isPlayerFalling) {
 				playerY += moveSpeed * view.z;
@@ -1764,6 +1884,7 @@ void handleMovement()
 		}
 		else if(moveBackward){
 			if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
+				checkOkSailing(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
 				!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && !playerIsFalling &&
 				!checkCollisionGem(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && !isPlayerFalling) {
 				playerY -= moveSpeed * view.z;
@@ -1775,6 +1896,7 @@ void handleMovement()
 		}
 		if (moveRight) {
 			if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
+				checkOkSailing(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
 				!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && !playerIsFalling &&
 				!checkCollisionGem(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && !isPlayerFalling) {
 				playerY += moveSpeed * view.x;
@@ -1786,6 +1908,7 @@ void handleMovement()
 		}
 		else if(moveLeft){
 			if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
+				checkOkSailing(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
 				!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && !playerIsFalling &&
 				!checkCollisionGem(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && !isPlayerFalling) {
 				playerY -= moveSpeed * view.x;
@@ -1807,6 +1930,7 @@ void myKeyboard(unsigned char button, int x, int y) {
 			engine->play2D("Sounds/jumppp22.ogg");
 			acceleration = 0.13;
 			jumpDelay = resetJumpDelay;
+			sailingRock = false;
 		}
 		break;
 	case 'w':
@@ -2045,6 +2169,7 @@ void LoadAssets()
 	model_rock[5].Load("Models/rocks/rock7/rock1.3DS");
 	model_rock[6].Load("Models/rocks/rock7/rock2.3DS");
 	model_rock[7].Load("Models/rocks/rock7/rock3.3DS");
+	model_rock[8].Load("Models/wall/wall1.3DS");
 	model_crystal.Load("Models/house/diamond.3DS");
 
 
