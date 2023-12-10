@@ -814,6 +814,50 @@ void drawGate() {
 	glPopMatrix();
 
 }
+
+void drawSpecialRock(float angle, float radius) {
+	angle += 180;
+	glPushMatrix();
+	glTranslated(2 - sin(DEG2RAD(angle)) * radius, -3.2, 50 + cos(DEG2RAD(angle)) * radius);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[2].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = 2 - 2 + 2 - sin(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][1] = 29.4 - 30 + 50 + cos(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][2] = 3;
+	rockPos[cntRock++][3] = 2.2;
+
+	rockPos[cntRock][0] = -3 - 2 + 2 - sin(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][1] = 30 - 30 + 50 + cos(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 1.5;
+
+	rockPos[cntRock][0] = -7 - 2 + 2 - sin(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][1] = 30.6 - 30 + 50 + cos(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 1.7;
+
+	rockPos[cntRock][0] = -10 - 2 + 2 - sin(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][1] = 31.5 - 30 + 50 + cos(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][2] = 1;
+	rockPos[cntRock++][3] = 1;
+
+	rockPos[cntRock][0] = 6.5 - 2 + 2 - sin(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][1] = 30 - 30 + 50 + cos(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 1.5;
+
+	rockPos[cntRock][0] = 10.5 - 2 + 2 - sin(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][1] = 30.6 - 30 + 50 + cos(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 1.5;
+
+	rockPos[cntRock][0] = 13.5 - 2 + 2 - sin(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][1] = 31.5 - 30 + 50 + cos(DEG2RAD(angle)) * radius;
+	rockPos[cntRock][2] = 1;
+	rockPos[cntRock++][3] = 1;
+}
+
 void drawSky(GLuint tex , int radius) {
 	glPushMatrix();
 
@@ -981,11 +1025,7 @@ void drawRock(){
 	rockPos[cntRock][2] = 6;
 	rockPos[cntRock++][3] = 4.2;
 
-	glPushMatrix();
-	glTranslated(2, -3.2, 30);
-	glScaled(0.2, 0.2, 0.2);
-	model_rock[2].Draw();
-	glPopMatrix();
+	drawSpecialRock(0, 20);
 
 	glPushMatrix();
 	glTranslated(2, -3.2, 70);
@@ -994,6 +1034,41 @@ void drawRock(){
 	model_rock[2].Draw();
 	glPopMatrix();
 
+	rockPos[cntRock][0] = 2;
+	rockPos[cntRock][1] = 29.4 + 41;
+	rockPos[cntRock][2] = 3;
+	rockPos[cntRock++][3] = 2.2;
+
+	rockPos[cntRock][0] = -3;
+	rockPos[cntRock][1] = 30 + 40;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 1.5;
+
+	rockPos[cntRock][0] = -7;
+	rockPos[cntRock][1] = 30.6 + 38.5;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 1.7;
+
+	rockPos[cntRock][0] = -10;
+	rockPos[cntRock][1] = 31.5 + 36.7;
+	rockPos[cntRock][2] = 1;
+	rockPos[cntRock++][3] = 1;
+
+	rockPos[cntRock][0] = 6.5;
+	rockPos[cntRock][1] = 30 + 40;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 1.5;
+
+	rockPos[cntRock][0] = 10.5;
+	rockPos[cntRock][1] = 30.6 + 39;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 1.5;
+
+	rockPos[cntRock][0] = 13.5;
+	rockPos[cntRock][1] = 31.5 + 37;
+	rockPos[cntRock][2] = 1;
+	rockPos[cntRock++][3] = 1;
+
 	glPushMatrix();
 	glTranslated(-20, -3.2, 50);
 	glRotated(90, 0, 1, 0);
@@ -1001,12 +1076,82 @@ void drawRock(){
 	model_rock[2].Draw();
 	glPopMatrix();
 
+	rockPos[cntRock][0] = -20.6;
+	rockPos[cntRock][1] = 49.4;
+	rockPos[cntRock][2] = 2.2;
+	rockPos[cntRock++][3] = 3;
+
+	rockPos[cntRock][0] = -19.8;
+	rockPos[cntRock][1] = 44.4;
+	rockPos[cntRock][2] = 1.5;
+	rockPos[cntRock++][3] = 2;
+
+	rockPos[cntRock][0] = -19;
+	rockPos[cntRock][1] = 41.4;
+	rockPos[cntRock][2] = 1.7;
+	rockPos[cntRock++][3] = 2;
+
+	rockPos[cntRock][0] = -18.2;
+	rockPos[cntRock][1] = 38.5;
+	rockPos[cntRock][2] = 1;
+	rockPos[cntRock++][3] = 1;
+
+	rockPos[cntRock][0] = -20;
+	rockPos[cntRock][1] = 54;
+	rockPos[cntRock][2] = 1.5;
+	rockPos[cntRock++][3] = 2;
+
+	rockPos[cntRock][0] = -19.5;
+	rockPos[cntRock][1] = 58;
+	rockPos[cntRock][2] = 1.5;
+	rockPos[cntRock++][3] = 2;
+
+	rockPos[cntRock][0] = -18.5;
+	rockPos[cntRock][1] = 61.5;
+	rockPos[cntRock][2] = 1.5;
+	rockPos[cntRock++][3] = 1.5;
+
 	glPushMatrix();
 	glTranslated(20, -3.2, 50);
 	glRotated(-90, 0, 1, 0);
 	glScaled(0.2, 0.2, 0.2);
 	model_rock[2].Draw();
 	glPopMatrix();
+
+	rockPos[cntRock][0] = -20.6 + 41.5;
+	rockPos[cntRock][1] = 49.4;
+	rockPos[cntRock][2] = 2.2;
+	rockPos[cntRock++][3] = 3;
+
+	rockPos[cntRock][0] = -19.8 + 40;
+	rockPos[cntRock][1] = 44.4;
+	rockPos[cntRock][2] = 1.5;
+	rockPos[cntRock++][3] = 2;
+
+	rockPos[cntRock][0] = -19 + 38.3;
+	rockPos[cntRock][1] = 41.4;
+	rockPos[cntRock][2] = 1.7;
+	rockPos[cntRock++][3] = 2;
+
+	rockPos[cntRock][0] = -18.2 + 36.7;
+	rockPos[cntRock][1] = 38.5;
+	rockPos[cntRock][2] = 1;
+	rockPos[cntRock++][3] = 1;
+
+	rockPos[cntRock][0] = -20 + 40;
+	rockPos[cntRock][1] = 54;
+	rockPos[cntRock][2] = 1.5;
+	rockPos[cntRock++][3] = 2;
+
+	rockPos[cntRock][0] = -19.5 + 38.7;
+	rockPos[cntRock][1] = 58;
+	rockPos[cntRock][2] = 1.5;
+	rockPos[cntRock++][3] = 2;
+
+	rockPos[cntRock][0] = -18.5 + 37.5;
+	rockPos[cntRock][1] = 61.5;
+	rockPos[cntRock][2] = 1.5;
+	rockPos[cntRock++][3] = 1.5;
 
 	glPushMatrix();
 	glTranslated(2, -0.25, -7);
@@ -1406,6 +1551,8 @@ void myDisplay1()
 void myDisplay2()
 {
 
+	cout << playerX << " " << playerY << '\n';
+
 	setupCamera();
 	curRock += 0.03;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1431,7 +1578,7 @@ void myDisplay2()
 	
 	playerFallingCoord += acceleration;
 
-	playerIsFalling = playerFallingCoord <= 0;
+	playerIsFalling = false;
 	handleFallPlayer();
 
 	jumpDelay -= 0.5;
