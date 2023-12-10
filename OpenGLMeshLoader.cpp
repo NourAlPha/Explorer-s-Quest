@@ -48,6 +48,7 @@ float playerY = 0.0;
 float playerAngle = 180.0f; // Initial angle
 float rotatePlayerKeyboard = 0;
 float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
+float coinPos = 0 , coinAdd = 0.001, coinRotation = 0;
 float curRock = 0;
 bool keyTaken = false , keyLoaded = false;
 bool keyLoaded2 = false;
@@ -85,6 +86,7 @@ int keyID = -1;
 bool isFP = true;
 bool firstTime = true;
 float coinPositions[50][3];
+vector<bool> coinExists(50 , true);
 float crystalPositions[3][2];
 int cntCoins = 0;
 bool playerIsFalling = true;
@@ -344,6 +346,15 @@ void Anim()
 	}
 	keyPos += keyAdd;
 	keyRotation += 5;
+	
+	if (coinPos >= 0.3) {
+		coinAdd = -0.001;
+	}
+	if (coinPos <= -0.3) {
+		coinAdd = 0.001;
+	}
+	coinPos += coinAdd;
+	coinRotation += 1;
 	glutPostRedisplay();
 }
 
@@ -1179,158 +1190,52 @@ void drawRock(){
 	glPopMatrix();
 
 }
+void drawCoin(float x, float z , Model_3DS coin) {
+	if (coinExists[cntCoins]) {
+		// Draw 5 gems at fixed but scattered locations on the ground
+		glPushMatrix();
+		glTranslated(x, 1.5 + coinPos, z);
+		glRotated(coinRotation, 0, 1, 0);
+		glScalef(0.5, 0.5, 0.5);
+		coin.Draw();
+		glPopMatrix();
+		coinPositions[cntCoins][0] = x;
+		coinPositions[cntCoins++][1] = z;
+	}
+	else {
+		cntCoins++;
+	}
+}
 void drawCoins() {
 	cntCoins = 0;
-	for (int i = 0; i < 3; i++) {
-		glPushMatrix();
-		glTranslated(50 - i * 5, 1.5, 0);
-		glScaled(0.5, 0.5, 0.5);
-		model_coin[3].Draw();
-		glPopMatrix();
-		coinPositions[cntCoins][0] = 50 - i * 5;
-		coinPositions[cntCoins++][1] = 0;
+	for (int i = 1; i < 3; i++) {
+		drawCoin(50 - i * 5, 0, model_coin[3]);
 	}
 
 	for (int i = 0; i < 2; i++) {
-		glPushMatrix();
-		glTranslated(25 - i * 5, 1.5, 0);
-		glScaled(0.5, 0.5, 0.5);
-		model_coin[3].Draw();
-		glPopMatrix();
-		coinPositions[cntCoins][0] = 25 - i * 5;
-		coinPositions[cntCoins++][1] = 0;
+		drawCoin(25 - i * 5, 0, model_coin[3]);
 	}
 
-	glPushMatrix();
-	glTranslated(12, 1.5, 0);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = 12;
-	coinPositions[cntCoins++][1] = 0;
-
-	glPushMatrix();
-	glTranslated(2, 1.5, 7);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = 2;
-	coinPositions[cntCoins++][1] = 7;
-
-	glPushMatrix();
-	glTranslated(2, 1.5, 20);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = 2;
-	coinPositions[cntCoins++][1] = 20;
-
-	glPushMatrix();
-	glTranslated(2, 1.5, 71);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = 2;
-	coinPositions[cntCoins++][1] = 71;
-
-	glPushMatrix();
-	glTranslated(-7, 1.5, 69);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = -7;
-	coinPositions[cntCoins++][1] = 69;
-
-	glPushMatrix();
-	glTranslated(11, 1.5, 69.5);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = 9;
-	coinPositions[cntCoins++][1] = 70;
-
-	glPushMatrix();
-	glTranslated(-20.5, 1.5, 50);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = -20.5;
-	coinPositions[cntCoins++][1] = 50;
-
-	glPushMatrix();
-	glTranslated(-19, 1.5, 41);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = -19;
-	coinPositions[cntCoins++][1] = 41;
-
-	glPushMatrix();
-	glTranslated(-19.5, 1.5, 59);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = -19.5;
-	coinPositions[cntCoins++][1] = 59;
-
-	glPushMatrix();
-	glTranslated(20.5, 1.5, 50);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = 20.5;
-	coinPositions[cntCoins++][1] = 50;
-
-	glPushMatrix();
-	glTranslated(19, 1.5, 41);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = 19;
-	coinPositions[cntCoins++][1] = 41;
-
-	glPushMatrix();
-	glTranslated(19.5, 1.5, 59);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = 19.5;
-	coinPositions[cntCoins++][1] = 59;
-
+	drawCoin(12, 0, model_coin[3]);
+	drawCoin(2, 7, model_coin[3]);
+	drawCoin(2, 20, model_coin[3]);
+	drawCoin(2, 71, model_coin[3]);
+	drawCoin(-7, 69, model_coin[3]);
+	drawCoin(11, 69.5, model_coin[3]);
+	drawCoin(-20.5, 50, model_coin[3]);
+	drawCoin(-19, 41, model_coin[3]);
+	drawCoin(-19.5, 59, model_coin[3]);
+	drawCoin(20.5, 50, model_coin[3]);
+	drawCoin(19, 41, model_coin[3]);
+	drawCoin(19.5, 59, model_coin[3]);
 	for (int i = 0; i < 3; i++) {
-		glPushMatrix();
-		glTranslated(-37 - i * 5, 1.5, 50);
-		glScaled(0.5, 0.5, 0.5);
-		model_coin[3].Draw();
-		glPopMatrix();
-		coinPositions[cntCoins][0] = -37 - i * 5;
-		coinPositions[cntCoins++][1] = 50;
+		drawCoin(-37 - i * 5, 50, model_coin[3]);
 	}
-
-	glPushMatrix();
-	glTranslated(-62, 1.5, 50);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = -62;
-	coinPositions[cntCoins++][1] = 50;
-
-	glPushMatrix();
-	glTranslated(-74, 1.5, 50);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = -74;
-	coinPositions[cntCoins++][1] = 50;
-
-	glPushMatrix();
-	glTranslated(-86, 1.5, 50);
-	glScaled(0.5, 0.5, 0.5);
-	model_coin[3].Draw();
-	glPopMatrix();
-	coinPositions[cntCoins][0] = -86;
-	coinPositions[cntCoins++][1] = 50;
-
+	drawCoin(-62, 50, model_coin[3]);
+	drawCoin(-74, 50, model_coin[3]);
+	drawCoin(-86, 50, model_coin[3]);
+}
+void drawCrystals() {
 	glPushMatrix();
 	glTranslated(-105, 0.3, 45);
 	glScaled(0.07, 0.07, 0.07);
@@ -1342,8 +1247,6 @@ void drawCoins() {
 	glScaled(0.07, 0.07, 0.07);
 	model_crystal.Draw();
 	glPopMatrix();
-	
-
 }
 
 void fallStatue()
@@ -1384,7 +1287,6 @@ void fallPlayer() {
 
 void handleFallPlayer()
 {
-	cout << cntRock << '\n';
 	for (int i = 0; i < cntRock; i++) {
 		if (rockPos[i][0] - rockPos[i][2] <= playerX && playerX <= rockPos[i][0] + rockPos[i][2]
 			&& rockPos[i][1] - rockPos[i][3] <= playerY && playerY <= rockPos[i][1] + rockPos[i][3]) {
@@ -1392,6 +1294,31 @@ void handleFallPlayer()
 		}
 	}
 	fallPlayer();
+}
+
+//=======================================================================
+// Function to check collision between the player and gems
+//=======================================================================
+
+bool checkCollisionCoins(float playerX, float playerY) {
+	if (firstLevel)return false;
+	for (int i = 0; i < cntCoins; ++i) {
+		if (coinExists[i]) {
+			float coinX = coinPositions[i][0];
+			float coinZ = coinPositions[i][1];
+			float distance = sqrt((playerX - coinX) * (playerX - coinX) + (playerY - coinZ) * (playerY - coinZ));
+
+
+			if (distance < playerBoundingRadius + objectBoundingRadius) {
+				// Collision detected, remove the gem
+				coinExists[i] = false;
+				//score[(int)gemPositions[i][2]]++;
+				engine->play2D("Sounds/pickup.wav", false);
+				return true;
+			}
+		}
+	}
+	return false; // No collision detected
 }
 
 void myDisplay1()
@@ -1479,8 +1406,6 @@ void myDisplay1()
 void myDisplay2()
 {
 
-	cout << playerX << " " << playerY << '\n';
-
 	setupCamera();
 	curRock += 0.03;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1495,6 +1420,8 @@ void myDisplay2()
 	drawPlayer();
 	drawRock();
 	drawCoins();
+	checkCollisionCoins(playerX , playerY);
+	drawCrystals();
 
 	handleMovement();
 	if (playerFallingCoord <= 0 && acceleration <= 0)
@@ -1619,6 +1546,8 @@ bool checkCollisionTree(float playerX, float playerY) {
 		}
 		return false; // No collision detected
 	}
+
+
 
 //=======================================================================
 // Keyboard Function

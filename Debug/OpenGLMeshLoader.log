@@ -1,1 +1,5 @@
-﻿  OpenGLMeshLoader.vcxproj -> D:\GUC\DMET 502\Explorer-s-Quest\Debug\OpenGLMeshLoader19.exe
+﻿  OpenGLMeshLoader.cpp
+C:\Users\Mohamed Ahmed\Documents\GitHub\Explorer-s-Quest\TextureBuilder.h(27,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\Mohamed Ahmed\Documents\GitHub\Explorer-s-Quest\TextureBuilder.h(28,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+GLTexture.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+  OpenGLMeshLoader.vcxproj -> C:\Users\Mohamed Ahmed\Documents\GitHub\Explorer-s-Quest\Debug\OpenGLMeshLoader19.exe
