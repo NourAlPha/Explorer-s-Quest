@@ -23,6 +23,8 @@ float fallingAnimSpeed = 0.1f;
 float playerFallingCoord = 0.0f;
 bool firstLevel = false;
 bool moveLeft, moveRight, moveForward, moveBackward;
+float resetJumpDelay = 40;
+float jumpDelay = resetJumpDelay;
 
 ISoundEngine* engine;
 
@@ -31,10 +33,18 @@ float cameraPosX = 0, cameraPosY = 0;
 int WIDTH = 1920;
 int HEIGHT = 1080;
 
+int cntStatue;
+float statueAngle[50];
+float statueAngleSpeed[50];
+float statuePos[50][3];
+float statueFallingPos[50];
+int statueFallDir[50];
+int cntRock;
+float rockPos[50][4];
 
 float cameraSpeedX = 0.1f, cameraSpeedY = 0.001f;
-float playerX = 50.0f;
-float playerY = 0.0f;
+float playerX = 50;
+float playerY = 0.0;
 float playerAngle = 180.0f; // Initial angle
 float rotatePlayerKeyboard = 0;
 float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
@@ -75,7 +85,9 @@ int keyID = -1;
 bool isFP = true;
 bool firstTime = true;
 float coinPositions[50][3];
+float crystalPositions[3][2];
 int cntCoins = 0;
+bool playerIsFalling = true;
 
 
 GLuint tex, tex_cave;
@@ -302,6 +314,7 @@ Model_3DS model_key, model_key_taken, model_key_loaded;
 Model_3DS model_key2, model_key_taken2, model_key_loaded2;
 Model_3DS model_rock[10];
 Model_3DS model_coin[4];
+Model_3DS model_crystal;
 
 
 Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
@@ -835,77 +848,127 @@ void RenderCaveGround()
 	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
 }
 void drawRock(){
+
+	cntRock = 0;
 	glPushMatrix();
 	glTranslated(50, -0.25, 0);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = 50;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
 	glTranslated(40, -0.25, 0);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = 40;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
 	glTranslated(23, -0.25, 0);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = 23;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
 	glTranslated(12, -0.25, 0);
 	glScaled(0.2, 0.2, 0.2);
 	model_rock[1].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = 12;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
 
 	glPushMatrix();
 	glTranslated(2, -0.25, 7);
 	glScaled(0.2, 0.2, 0.2);
 	model_rock[1].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = 2;
+	rockPos[cntRock][1] = 7;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
 
 	glPushMatrix();
 	glTranslated(2, -0.25, 20);
 	glScaled(0.2, 0.2, 0.2);
 	model_rock[1].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = 2;
+	rockPos[cntRock][1] = 20;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
 
 	glPushMatrix();
 	glTranslated(-7, -0.25, 0);
 	glScaled(0.2, 0.2, 0.2);
 	model_rock[1].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -7;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
 
 	glPushMatrix();
-	glTranslated(-25, -0.25, 0);
+	glTranslated(-22, -0.25, 0);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -22;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
-	glTranslated(-35, -0.25, 0);
+	glTranslated(-32, -0.25, 0);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -32;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
-	glTranslated(-45, -0.25, 0);
+	glTranslated(-42, -0.25, 0);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -42;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
-	glTranslated(-55, -0.25, 0);
+	glTranslated(-52, -0.25, 0);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -52;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
-	glTranslated(-65, -0.25, 0);
+	glTranslated(-62, -0.25, 0);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -62;
+	rockPos[cntRock][1] = 0;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
 	glTranslated(2, -3.2, 30);
@@ -939,12 +1002,20 @@ void drawRock(){
 	glScaled(0.2, 0.2, 0.2);
 	model_rock[1].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = 2;
+	rockPos[cntRock][1] = -7;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
 
 	glPushMatrix();
 	glTranslated(2, -0.25, -20);
 	glScaled(0.2, 0.2, 0.2);
 	model_rock[1].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = 2;
+	rockPos[cntRock][1] = -20;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
 
 	glPushMatrix();
 	glTranslated(2, -3.2, 50);
@@ -984,12 +1055,20 @@ void drawRock(){
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -37;
+	rockPos[cntRock][1] = 50;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
 	glTranslated(-47, -0.25, 50);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[0].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -47;
+	rockPos[cntRock][1] = 50;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
 
 	glPushMatrix();
 	glTranslated(-62, -0.8, 50);
@@ -1014,11 +1093,89 @@ void drawRock(){
 	glScaled(1, 0.2, 1);
 	model_rock[1].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -105;
+	rockPos[cntRock][1] = 50;
+	rockPos[cntRock][2] = 2.4 * 5;
+	rockPos[cntRock++][3] = 2.4 * 5;
 
 	glPushMatrix();
 	glTranslated(-50, 0, 100);
-	glScaled(2, 2, 2);
+	glScaled(2.1, 2.1, 2.1);
 	model_rock[2].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(75, -0.8, 120);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[5].Draw();
+	glPopMatrix();
+
+	cntStatue = 0;
+	statuePos[cntStatue][0] = 45;
+	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
+	statuePos[cntStatue][2] = 120;
+	statueFallDir[cntStatue] = -1;
+	glPushMatrix();
+	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
+	glScaled(3, 3, 3);
+	glRotated(90, 0, 1, 0);
+	glRotated(statueAngle[cntStatue++], 0, 0, 1);
+	model_statue.Draw();
+	glPopMatrix();
+
+	statuePos[cntStatue][0] = 15;
+	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
+	statuePos[cntStatue][2] = 90;
+	statueFallDir[cntStatue] = 1;
+	glPushMatrix();
+	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
+	glScaled(3, 3, 3);
+	glRotated(90, 0, 1, 0);
+	glRotated(statueAngle[cntStatue++], 0, 0, 1);
+	model_statue.Draw();
+	glPopMatrix();
+
+	statuePos[cntStatue][0] = -20;
+	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
+	statuePos[cntStatue][2] = 105;
+	statueFallDir[cntStatue] = -1;
+	glPushMatrix();
+	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
+	glScaled(3, 3, 3);
+	glRotated(90, 0, 1, 0);
+	glRotated(statueAngle[cntStatue++], 0, 0, 1);
+	model_statue.Draw();
+	glPopMatrix();
+	
+	statuePos[cntStatue][0] = -55;
+	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
+	statuePos[cntStatue][2] = 77;
+	statueFallDir[cntStatue] = 1;
+	glPushMatrix();
+	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
+	glScaled(3, 3, 3);
+	glRotated(90, 0, 1, 0);
+	glRotated(statueAngle[cntStatue++], 0, 0, 1);
+	model_statue.Draw();
+	glPopMatrix();
+
+	statuePos[cntStatue][0] = -100;
+	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
+	statuePos[cntStatue][2] = 110;
+	statueFallDir[cntStatue] = -1;
+	glPushMatrix();
+	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
+	glScaled(3, 3, 3);
+	glRotated(90, 0, 1, 0);
+	glRotated(statueAngle[cntStatue++], 0, 0, 1);
+	model_statue.Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-142, -0.25, 105);
+	glScaled(1, 0.2, 1);
+	glRotated(10, 0, 1, 0);
+	model_rock[1].Draw();
 	glPopMatrix();
 
 }
@@ -1116,6 +1273,125 @@ void drawCoins() {
 	coinPositions[cntCoins][0] = -19.5;
 	coinPositions[cntCoins++][1] = 59;
 
+	glPushMatrix();
+	glTranslated(20.5, 1.5, 50);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = 20.5;
+	coinPositions[cntCoins++][1] = 50;
+
+	glPushMatrix();
+	glTranslated(19, 1.5, 41);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = 19;
+	coinPositions[cntCoins++][1] = 41;
+
+	glPushMatrix();
+	glTranslated(19.5, 1.5, 59);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = 19.5;
+	coinPositions[cntCoins++][1] = 59;
+
+	for (int i = 0; i < 3; i++) {
+		glPushMatrix();
+		glTranslated(-37 - i * 5, 1.5, 50);
+		glScaled(0.5, 0.5, 0.5);
+		model_coin[3].Draw();
+		glPopMatrix();
+		coinPositions[cntCoins][0] = -37 - i * 5;
+		coinPositions[cntCoins++][1] = 50;
+	}
+
+	glPushMatrix();
+	glTranslated(-62, 1.5, 50);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = -62;
+	coinPositions[cntCoins++][1] = 50;
+
+	glPushMatrix();
+	glTranslated(-74, 1.5, 50);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = -74;
+	coinPositions[cntCoins++][1] = 50;
+
+	glPushMatrix();
+	glTranslated(-86, 1.5, 50);
+	glScaled(0.5, 0.5, 0.5);
+	model_coin[3].Draw();
+	glPopMatrix();
+	coinPositions[cntCoins][0] = -86;
+	coinPositions[cntCoins++][1] = 50;
+
+	glPushMatrix();
+	glTranslated(-105, 0.3, 45);
+	glScaled(0.07, 0.07, 0.07);
+	model_crystal.Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-142, 0.3, 98);
+	glScaled(0.07, 0.07, 0.07);
+	model_crystal.Draw();
+	glPopMatrix();
+	
+
+}
+
+void fallStatue()
+{
+	for (int i = 0; i < cntStatue; i++) {
+		if (abs(statueAngle[i]) >= 90) {
+			statueFallingPos[i] += -0.03;
+			continue;
+		}
+		statueAngle[i] += statueAngleSpeed[i];
+	}
+}
+
+void handleFallingStatues()
+{
+	for (int i = 0; i < cntStatue; i++) {
+		if ((playerX - statuePos[i][0]) * (playerX - statuePos[i][0]) + 
+			(playerY - statuePos[i][2]) * (playerY - statuePos[i][2]) <= 400) {
+			statueAngleSpeed[i] = statueFallDir[i] * 0.5;
+		}
+	}
+	fallStatue();
+}
+
+void fallPlayer() {
+	if (!playerIsFalling)return;
+
+	playerFallingCoord -= 0.02;
+
+	if (playerFallingCoord <= -5) {
+		playerFallingCoord = 0;
+		playerX = 50;
+		playerY = 0;
+		explorerCameraTP.refresh();
+		explorerCameraFP.resetFP();
+	}
+}
+
+void handleFallPlayer()
+{
+	cout << cntRock << '\n';
+	for (int i = 0; i < cntRock; i++) {
+		if (rockPos[i][0] - rockPos[i][2] <= playerX && playerX <= rockPos[i][0] + rockPos[i][2]
+			&& rockPos[i][1] - rockPos[i][3] <= playerY && playerY <= rockPos[i][1] + rockPos[i][3]) {
+			playerIsFalling = false;
+		}
+	}
+	fallPlayer();
 }
 
 void myDisplay1()
@@ -1202,6 +1478,9 @@ void myDisplay1()
 
 void myDisplay2()
 {
+
+	cout << playerX << " " << playerY << '\n';
+
 	setupCamera();
 	curRock += 0.03;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1211,6 +1490,12 @@ void myDisplay2()
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
+	RenderCaveGround();
+	drawSky(tex_cave, 300);
+	drawPlayer();
+	drawRock();
+	drawCoins();
+
 	handleMovement();
 	if (playerFallingCoord <= 0 && acceleration <= 0)
 		acceleration = 0;
@@ -1219,12 +1504,15 @@ void myDisplay2()
 	
 	playerFallingCoord += acceleration;
 
-	// Draw Ground
-	RenderCaveGround();
-	drawSky(tex_cave , 300);
-	drawPlayer();
-	drawRock();
-	drawCoins();
+	playerIsFalling = playerFallingCoord <= 0;
+	handleFallPlayer();
+
+	jumpDelay -= 0.5;
+	if (jumpDelay < 0)jumpDelay = 0;
+	handleFallingStatues();
+
+
+
 	glutSwapBuffers();
 
 }
@@ -1377,7 +1665,7 @@ void handleMovement()
 
 		if (moveForward) {
 			if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
-				!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
+				!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && !playerIsFalling &&
 				!checkCollisionGem(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && !isPlayerFalling) {
 				playerY += moveSpeed * view.z;
 				playerX += moveSpeed * view.x;
@@ -1388,7 +1676,7 @@ void handleMovement()
 		}
 		else if(moveBackward){
 			if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
-				!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
+				!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && !playerIsFalling &&
 				!checkCollisionGem(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && !isPlayerFalling) {
 				playerY -= moveSpeed * view.z;
 				playerX -= moveSpeed * view.x;
@@ -1399,7 +1687,7 @@ void handleMovement()
 		}
 		if (moveRight) {
 			if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
-				!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
+				!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && !playerIsFalling &&
 				!checkCollisionGem(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && !isPlayerFalling) {
 				playerY += moveSpeed * view.x;
 				playerX -= moveSpeed * view.z;
@@ -1410,7 +1698,7 @@ void handleMovement()
 		}
 		else if(moveLeft){
 			if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
-				!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
+				!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && !playerIsFalling &&
 				!checkCollisionGem(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && !isPlayerFalling) {
 				playerY -= moveSpeed * view.x;
 				playerX += moveSpeed * view.z;
@@ -1427,9 +1715,10 @@ void myKeyboard(unsigned char button, int x, int y) {
 
 	switch (button) {
 	case ' ':
-		if (acceleration == 0) {
+		if (acceleration == 0 && jumpDelay <= 0 && !playerIsFalling) {
 			engine->play2D("Sounds/jumppp22.ogg");
 			acceleration = 0.13;
+			jumpDelay = resetJumpDelay;
 		}
 		break;
 	case 'w':
@@ -1668,6 +1957,7 @@ void LoadAssets()
 	model_rock[5].Load("Models/rocks/rock7/rock1.3DS");
 	model_rock[6].Load("Models/rocks/rock7/rock2.3DS");
 	model_rock[7].Load("Models/rocks/rock7/rock3.3DS");
+	model_crystal.Load("Models/house/diamond.3DS");
 
 
 	// Loading texture files
