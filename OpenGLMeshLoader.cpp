@@ -1231,18 +1231,30 @@ void drawRock(){
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[6].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -62;
+	rockPos[cntRock][1] = 50;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 2;
 
 	glPushMatrix();
 	glTranslated(-74, -0.8, 50);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[5].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -74;
+	rockPos[cntRock][1] = 50;
+	rockPos[cntRock][2] = 1.85;
+	rockPos[cntRock++][3] = 2.25;
 
 	glPushMatrix();
 	glTranslated(-86, -0.8, 50);
 	glScaled(0.1, 0.1, 0.1);
 	model_rock[7].Draw();
 	glPopMatrix();
+	rockPos[cntRock][0] = -86;
+	rockPos[cntRock][1] = 50;
+	rockPos[cntRock][2] = 2;
+	rockPos[cntRock++][3] = 2.4;
 
 	glPushMatrix();
 	glTranslated(-105, -0.25, 50);
