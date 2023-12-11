@@ -27,8 +27,8 @@ bool firstLevel = false;
 bool moveLeft, moveRight, moveForward, moveBackward;
 float resetJumpDelay = 40;
 float jumpDelay = resetJumpDelay;
-float teleportPosX = -105, teleportPosY = 58;
-float teleportWidth = 5, teleportHeight = 5;
+float teleportPosX = -125.233, teleportPosY = 48.8299;
+float teleportWidth = 2, teleportHeight = 2;
 bool sailingRock = false;
 float sailingRockX = 78.5, sailingRockY = 108.1;
 
@@ -141,8 +141,10 @@ bool firstTime = true;
 float coinPositions[50][3];
 vector<bool> coinExists(50 , true);
 float crystalPositions[3][2];
+vector<bool> crystalExists(3, true);
 int cntCoins = 0;
 bool playerIsFalling = true;
+bool enableFalling = true;
 
 
 GLuint tex, tex_cave;
@@ -406,6 +408,7 @@ Model_3DS model_key2, model_key_taken2, model_key_loaded2;
 Model_3DS model_rock[10];
 Model_3DS model_coin[4];
 Model_3DS model_crystal;
+Model_3DS model_portal[4];
 
 
 Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
@@ -1505,17 +1508,24 @@ void drawCoins() {
 	drawCoin(-86, 50, model_coin[3]);
 }
 void drawCrystals() {
-	glPushMatrix();
-	glTranslated(-105, 0.3, 45);
-	glScaled(0.07, 0.07, 0.07);
-	model_crystal.Draw();
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslated(-142, 0.3, 98);
-	glScaled(0.07, 0.07, 0.07);
-	model_crystal.Draw();
-	glPopMatrix();
+	if (crystalExists[0]) {
+		glPushMatrix();
+		glTranslated(-105, 0.3, 45);
+		glScaled(0.07, 0.07, 0.07);
+		model_crystal.Draw();
+		glPopMatrix();
+		crystalPositions[0][0] = -105;
+		crystalPositions[0][1] = 45;
+	}
+	if (crystalExists[1]) {
+		glPushMatrix();
+		glTranslated(-142, 0.3, 98);
+		glScaled(0.07, 0.07, 0.07);
+		model_crystal.Draw();
+		glPopMatrix();
+		crystalPositions[1][0] = -142;
+		crystalPositions[1][1] = 98;
+	}
 }
 
 void fallStatue()
@@ -1566,9 +1576,8 @@ void handleFallPlayer()
 }
 
 //=======================================================================
-// Function to check collision between the player and gems
+// Function to check collision between the player and coins
 //=======================================================================
-
 bool checkCollisionCoins(float playerX, float playerY) {
 	if (firstLevel)return false;
 	for (int i = 0; i < cntCoins; ++i) {
@@ -1590,6 +1599,85 @@ bool checkCollisionCoins(float playerX, float playerY) {
 	return false; // No collision detected
 }
 
+//=======================================================================
+// Function to check collision between the player and crystals
+//=======================================================================
+bool checkCollisionCrystals(float playerX, float playerY) {
+	if (firstLevel)return false;
+	for (int i = 0; i < 2; ++i) {
+		if (crystalExists[i]) {
+			float crystalX = crystalPositions[i][0];
+			float crystalZ = crystalPositions[i][1];
+			float distance = sqrt((playerX - crystalX) * (playerX - crystalX) + (playerY - crystalZ) * (playerY - crystalZ));
+			if (distance < playerBoundingRadius + objectBoundingRadius) {
+				crystalExists[i] = false;
+				engine->play2D("Sounds/item-pick-up.mp3", false);
+				if (i == 0) {
+					engine->play2D("Sounds/energyflow.wav", false);
+				}
+				return true;
+			}
+		}
+	}
+	return false; // No collision detected
+}
+
+void drawSquare(float x, float y, float width, float height)
+{
+	glPushMatrix();
+	glTranslatef(x, 1, y);
+	glBegin(GL_QUADS);
+	glVertex3f(0, 0, 0);
+	glVertex3f(width, 0, 0);
+	glVertex3f(width, 0, height);
+	glVertex3f(0, 0, height);
+	glEnd();
+	glPopMatrix();
+}
+void drawSquare() {
+
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glVertex3f(80, 0, 97);
+	glVertex3f(80, 0, 118);
+	glVertex3f(-50, 0, 116);
+	glVertex3f(-50, 0, 79);
+	glEnd();
+	glPopMatrix();
+}
+void drawSquare2()
+{
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glVertex3f(-50, 0, 82);
+	glVertex3f(-50, 0, 116);
+	glVertex3f(-126, 0, 114);
+	glVertex3f(-126, 0, 92);
+	glEnd();
+	glPopMatrix();
+}
+void checkCollisionFallingStatue()
+{
+	if (!sailingRock)return;
+	for (int i = 0; i < cntStatue; i++) {
+		Vector3f player = Vector3f(playerX, 2.2, playerY);
+		Vector3f startPos = Vector3f(statuePos[i][0], statuePos[i][1], statuePos[i][2]);
+		Vector3f endPos = Vector3f(statueEndPoint[i][0], statueEndPoint[i][1], statueEndPoint[i][2]);
+		if (distancePointToLine(player, startPos, endPos) <= 5) {
+			isDead = true;
+		}
+	}
+}
+void drawPortal() {
+	if (!crystalExists[0]){
+		glPushMatrix();
+		glTranslated(-125, -1, 50);
+		glRotated(-90, 0, 1, 0);
+		model_portal[0].Draw();
+		glPopMatrix();
+	}
+}
+
 void myDisplay1()
 {
 
@@ -1604,9 +1692,9 @@ void myDisplay1()
 
 	// Draw Ground
 	RenderGround();
-	if(keyLoaded && keyLoaded2)
+	if (keyLoaded && keyLoaded2)
 		RenderVortex();
-	
+
 	handleMovement();
 
 	if (playerX >= 43.5 && playerX <= 46.5 && playerY >= -1 && playerY <= 1 && keyLoaded && keyLoaded2)
@@ -1664,62 +1752,11 @@ void myDisplay1()
 	drawStatues();
 	drawGate();
 	RenderSea();
-	drawSky(tex , 150);
+	drawSky(tex, 150);
 
 	glutSwapBuffers();
-	
+
 }
-
-void drawSquare(float x, float y, float width, float height)
-{
-	glPushMatrix();
-	glTranslatef(x, 1, y);
-	glBegin(GL_QUADS);
-	glVertex3f(0, 0, 0);
-	glVertex3f(width, 0, 0);
-	glVertex3f(width, 0, height);
-	glVertex3f(0, 0, height);
-	glEnd();
-	glPopMatrix();
-}
-
-void drawSquare() {
-
-	glPushMatrix();
-	glBegin(GL_QUADS);
-	glVertex3f(80, 0, 97);
-	glVertex3f(80, 0, 118);
-	glVertex3f(-50, 0, 116);
-	glVertex3f(-50, 0, 79);
-	glEnd();
-	glPopMatrix();
-}
-
-void drawSquare2()
-{
-	glPushMatrix();
-	glBegin(GL_QUADS);
-	glVertex3f(-50, 0, 82);
-	glVertex3f(-50, 0, 116);
-	glVertex3f(-126, 0, 114);
-	glVertex3f(-126, 0, 92);
-	glEnd();
-	glPopMatrix();
-}
-
-void checkCollisionFallingStatue()
-{
-	if (!sailingRock)return;
-	for (int i = 0; i < cntStatue; i++) {
-		Vector3f player = Vector3f(playerX, 2.2, playerY);
-		Vector3f startPos = Vector3f(statuePos[i][0], statuePos[i][1], statuePos[i][2]);
-		Vector3f endPos = Vector3f(statueEndPoint[i][0], statueEndPoint[i][1], statueEndPoint[i][2]);
-		if (distancePointToLine(player, startPos, endPos) <= 5) {
-			isDead = true;
-		}
-	}
-}
-
 void myDisplay2()
 {
 
@@ -1741,6 +1778,8 @@ void myDisplay2()
 	drawCoins();
 	checkCollisionCoins(playerX , playerY);
 	drawCrystals();
+	checkCollisionCrystals(playerX, playerY);
+	drawPortal();
 
 	handleMovement();
 	if (playerFallingCoord <= 0 && acceleration <= 0)
@@ -1764,8 +1803,13 @@ void myDisplay2()
 	
 	playerFallingCoord += acceleration;
 
-	playerIsFalling = false;
-	handleFallPlayer();	
+	if (enableFalling) {
+		playerIsFalling = playerFallingCoord <= 0;
+		handleFallPlayer();
+	}
+	else {
+		playerIsFalling = false;
+	}
 
 	checkCollisionFallingStatue();
 	if (isDead) {
@@ -1781,8 +1825,6 @@ void myDisplay2()
 	jumpDelay -= 0.5;
 	if (jumpDelay < 0)jumpDelay = 0;
 	handleFallingStatues();
-
-
 
 	glutSwapBuffers();
 
@@ -2021,6 +2063,9 @@ void myKeyboard(unsigned char button, int x, int y) {
 	case 'a':
 		moveLeft = true;
 		break;
+	case 'x':
+		enableFalling = !enableFalling;
+		break;
 	case '1':
 		isFP = true;
 		break;
@@ -2247,6 +2292,10 @@ void LoadAssets()
 	model_rock[7].Load("Models/rocks/rock7/rock3.3DS");
 	model_rock[8].Load("Models/wall/wall1.3DS");
 	model_crystal.Load("Models/house/diamond.3DS");
+	model_portal[0].Load("models/car1.3DS");
+	model_portal[1].Load("models/portal/portal2.3DS");
+	model_portal[2].Load("models/portal/portal3.3DS");
+	model_portal[3].Load("models/portal/portal4.3DS");
 
 
 	// Loading texture files
