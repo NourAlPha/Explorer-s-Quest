@@ -28,6 +28,7 @@ bool moveLeft, moveRight, moveForward, moveBackward;
 float resetJumpDelay = 40;
 float jumpDelay = resetJumpDelay;
 float teleportPosX = -125.233, teleportPosY = 48.8299;
+float teleport2PosX = -162.88 , teleport2PosY = 99.7334;
 float teleportWidth = 2, teleportHeight = 2;
 bool sailingRock = false;
 float sailingRockX = 78.5, sailingRockY = 108.1;
@@ -47,7 +48,7 @@ float statueFallingPos[50];
 int statueFallDir[50];
 float statueEndPoint[50][3];
 int cntRock;
-float rockPos[50][4];
+float rockPos[100][4];
 bool isDead = false;
 
 struct Point {
@@ -145,7 +146,7 @@ vector<bool> crystalExists(3, true);
 int cntCoins = 0;
 bool playerIsFalling = true;
 bool enableFalling = true;
-
+bool win = false;
 
 GLuint tex, tex_cave;
 char title[] = "3D Model Loader Sample";
@@ -401,7 +402,8 @@ Model_3DS model_tree[3];
 Model_3DS model_explorer[21];
 Model_3DS model_gem[2];
 Model_3DS model_statue;
-Model_3DS model_gate;
+Model_3DS model_gate_level1;
+Model_3DS model_gate_level2;
 Model_3DS model_pond;
 Model_3DS model_key, model_key_taken, model_key_loaded;
 Model_3DS model_key2, model_key_taken2, model_key_loaded2;
@@ -900,7 +902,7 @@ void drawGate() {
 
 	glPushMatrix();
 	glRotatef(-90, 0, 1, 0);
-	model_gate.Draw();
+	model_gate_level1.Draw();
 	glPopMatrix();
 
 	glPopMatrix();
@@ -1067,56 +1069,6 @@ void drawRock(){
 	rockPos[cntRock][2] = 2.4;
 	rockPos[cntRock++][3] = 2.4;
 
-	glPushMatrix();
-	glTranslated(-22, -0.25, 0);
-	glScaled(0.1, 0.1, 0.1);
-	model_rock[0].Draw();
-	glPopMatrix();
-	rockPos[cntRock][0] = -22;
-	rockPos[cntRock][1] = 0;
-	rockPos[cntRock][2] = 6;
-	rockPos[cntRock++][3] = 4.2;
-
-	glPushMatrix();
-	glTranslated(-32, -0.25, 0);
-	glScaled(0.1, 0.1, 0.1);
-	model_rock[0].Draw();
-	glPopMatrix();
-	rockPos[cntRock][0] = -32;
-	rockPos[cntRock][1] = 0;
-	rockPos[cntRock][2] = 6;
-	rockPos[cntRock++][3] = 4.2;
-
-	glPushMatrix();
-	glTranslated(-42, -0.25, 0);
-	glScaled(0.1, 0.1, 0.1);
-	model_rock[0].Draw();
-	glPopMatrix();
-	rockPos[cntRock][0] = -42;
-	rockPos[cntRock][1] = 0;
-	rockPos[cntRock][2] = 6;
-	rockPos[cntRock++][3] = 4.2;
-
-	glPushMatrix();
-	glTranslated(-52, -0.25, 0);
-	glScaled(0.1, 0.1, 0.1);
-	model_rock[0].Draw();
-	glPopMatrix();
-	rockPos[cntRock][0] = -52;
-	rockPos[cntRock][1] = 0;
-	rockPos[cntRock][2] = 6;
-	rockPos[cntRock++][3] = 4.2;
-
-	glPushMatrix();
-	glTranslated(-62, -0.25, 0);
-	glScaled(0.1, 0.1, 0.1);
-	model_rock[0].Draw();
-	glPopMatrix();
-	rockPos[cntRock][0] = -62;
-	rockPos[cntRock][1] = 0;
-	rockPos[cntRock][2] = 6;
-	rockPos[cntRock++][3] = 4.2;
-
 	drawSpecialRock(0, 20);
 
 	glPushMatrix();
@@ -1246,26 +1198,6 @@ void drawRock(){
 	rockPos[cntRock++][3] = 1.5;
 
 	glPushMatrix();
-	glTranslated(2, -0.25, -7);
-	glScaled(0.2, 0.2, 0.2);
-	model_rock[1].Draw();
-	glPopMatrix();
-	rockPos[cntRock][0] = 2;
-	rockPos[cntRock][1] = -7;
-	rockPos[cntRock][2] = 2.4;
-	rockPos[cntRock++][3] = 2.4;
-
-	glPushMatrix();
-	glTranslated(2, -0.25, -20);
-	glScaled(0.2, 0.2, 0.2);
-	model_rock[1].Draw();
-	glPopMatrix();
-	rockPos[cntRock][0] = 2;
-	rockPos[cntRock][1] = -20;
-	rockPos[cntRock][2] = 2.4;
-	rockPos[cntRock++][3] = 2.4;
-
-	glPushMatrix();
 	glTranslated(2, -3.2, 50);
 	glScaled(0.2, 0.2, 0.2);
 	model_rock[3].Draw();
@@ -1355,8 +1287,8 @@ void drawRock(){
 	glPopMatrix();
 	rockPos[cntRock][0] = -105;
 	rockPos[cntRock][1] = 50;
-	rockPos[cntRock][2] = 2.4 * 5;
-	rockPos[cntRock++][3] = 2.4 * 5;
+	rockPos[cntRock][2] = 2.4 * 4.4;
+	rockPos[cntRock++][3] = 2.4 * 4.4;
 
 	glPushMatrix();
 	glTranslated(-50, 0, 100);
@@ -1451,15 +1383,115 @@ void drawRock(){
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslated(-142, -0.25, 105);
+	glTranslated(-142, -0.25, 100);
 	glScaled(1, 0.2, 1);
-	glRotated(10, 0, 1, 0);
 	model_rock[1].Draw();
 	glPopMatrix();
 	rockPos[cntRock][0] = -142;
 	rockPos[cntRock][1] = 100;
-	rockPos[cntRock][2] = 2.4 * 5;
-	rockPos[cntRock++][3] = 2.4 * 5;
+	rockPos[cntRock][2] = 2.4 * 4.4;
+	rockPos[cntRock++][3] = 2.4 * 4.4;
+
+
+	/////////////////////////////////////////////////////////
+	/////// right side
+	/////////////////////////////////////////////////////////
+	glPushMatrix();
+	glTranslated(-5, -0.25, -32);
+
+	glPushMatrix();
+	glTranslated(-22, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = -27;
+	rockPos[cntRock][1] = -32;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
+
+	glPushMatrix();
+	glTranslated(-32, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = -37;
+	rockPos[cntRock][1] = -32;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
+
+	glPushMatrix();
+	glTranslated(-42, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = -47;
+	rockPos[cntRock][1] = -32;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
+
+	glPushMatrix();
+	glTranslated(-52, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = -57;
+	rockPos[cntRock][1] = -32;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
+
+	glPushMatrix();
+	glTranslated(-62, -0.25, 0);
+	glScaled(0.1, 0.1, 0.1);
+	model_rock[0].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = -67;
+	rockPos[cntRock][1] = -32;
+	rockPos[cntRock][2] = 6;
+	rockPos[cntRock++][3] = 4.2;
+
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(2, -0.25, -7);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = 2;
+	rockPos[cntRock][1] = -7;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
+
+	glPushMatrix();
+	glTranslated(2, -0.25, -19);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = 2;
+	rockPos[cntRock][1] = -19;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
+
+	glPushMatrix();
+	glTranslated(2, -0.25, -32);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = 2;
+	rockPos[cntRock][1] = -32;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
+
+	glPushMatrix();
+	glTranslated(-10, -0.25, -32);
+	glScaled(0.2, 0.2, 0.2);
+	model_rock[1].Draw();
+	glPopMatrix();
+	rockPos[cntRock][0] = -10;
+	rockPos[cntRock][1] = -32;
+	rockPos[cntRock][2] = 2.4;
+	rockPos[cntRock++][3] = 2.4;
+
+
 
 }
 void drawCoin(float x, float z , Model_3DS coin) {
@@ -1553,7 +1585,7 @@ void handleFallingStatues()
 void fallPlayer() {
 	if (!playerIsFalling)return;
 
-	playerFallingCoord -= 0.02;
+	playerFallingCoord -= 0.03;
 
 	if (playerFallingCoord <= -3) {
 		playerFallingCoord = 0;
@@ -1676,6 +1708,23 @@ void drawPortal() {
 		model_portal[0].Draw();
 		glPopMatrix();
 	}
+	if (!crystalExists[1]) {
+		glPushMatrix();
+		glTranslated(-163, -1, 100);
+		glRotated(-90, 0, 1, 0);
+		model_portal[0].Draw();
+		glPopMatrix();
+	}
+}
+void drawGateLv2() {
+	if (!crystalExists[0] && !crystalExists[1]) {
+		glPushMatrix();
+		glTranslated(-70, 1, -32);
+		glRotated(90, 0, 1, 0);
+		glScaled(0.05, 0.05, 0.05);
+		model_gate_level2.Draw();
+		glPopMatrix();
+	}
 }
 
 void myDisplay1()
@@ -1780,6 +1829,7 @@ void myDisplay2()
 	drawCrystals();
 	checkCollisionCrystals(playerX, playerY);
 	drawPortal();
+	drawGateLv2();
 
 	handleMovement();
 	if (playerFallingCoord <= 0 && acceleration <= 0)
@@ -1787,13 +1837,26 @@ void myDisplay2()
 	else
 		acceleration -= 0.004;
 
-	if (teleportPosX - teleportWidth <= playerX && playerX <= teleportPosX + teleportWidth
+	if (!crystalExists[0] && teleportPosX - teleportWidth <= playerX && playerX <= teleportPosX + teleportWidth
 		&& teleportPosY - teleportHeight <= playerY && playerY <= teleportPosY + teleportHeight) {
 		sailingRock = true;
 		playerX = sailingRockX;
 		playerY = sailingRockY;
 		explorerCameraTP.refresh();
 		explorerCameraFP.resetFP();
+	}
+
+	if (!crystalExists[1] && teleport2PosX - teleportWidth <= playerX && playerX <= teleport2PosX + teleportWidth
+		&& teleport2PosY - teleportHeight <= playerY && playerY <= teleport2PosY + teleportHeight) {
+		playerX = -110.698 ;
+		playerY = 51.3945;
+		explorerCameraTP.refresh();
+		explorerCameraFP.resetFP();
+	}
+
+	if (!crystalExists[0] && !crystalExists[1] && playerX >= -70.5 && playerX <= -69 && playerY >= -34.5 && playerY <= -29)
+	{
+		win = true;
 	}
 
 	if (sailingRock) {
@@ -1826,12 +1889,22 @@ void myDisplay2()
 	if (jumpDelay < 0)jumpDelay = 0;
 	handleFallingStatues();
 
+	if (win) {
+		playerX = 5000;
+		playerY = 5000;
+		explorerCameraTP.refresh();
+		explorerCameraFP.resetFP();
+		playerX = 0;
+		playerY = 0;
+	}
+
 	glutSwapBuffers();
 
 }
 
 void myDisplay(void)
 {
+
 	myDisplay2();
 }
 
@@ -1951,6 +2024,7 @@ bool checkCollisionTree(float playerX, float playerY) {
 
 void handleMovement()
 	{
+		if (win) return;
 		float moveSpeed = 0.05f; // Adjust the speed as needed
 		float rotationAngle = 5.0f; // Adjust the rotation angle as needed
 		Vector3f view = explorerCameraTP.center - explorerCameraTP.eye;
@@ -2040,7 +2114,7 @@ void handleMovement()
 
 void myKeyboard(unsigned char button, int x, int y) {
 	float moveSpeed = 0.1f; // Adjust the speed as needed
-	
+	if (win) return;
 
 	switch (button) {
 	case ' ':
@@ -2121,6 +2195,7 @@ void myKeyboard(unsigned char button, int x, int y) {
 }
 
 void myKeyboardUp(unsigned char button, int x, int y) {
+	if (win) return;
 	switch (button) {
 	case 'w':
 		moveForward = false;
@@ -2142,6 +2217,7 @@ void myKeyboardUp(unsigned char button, int x, int y) {
 
 void Special(int key, int x, int y)
 {
+	if (win) return;
 	float a = 1.0;
 
 	switch (key)
@@ -2168,7 +2244,7 @@ void Special(int key, int x, int y)
 //=======================================================================
 void myMotion(int x, int y)
 {
-
+	if (win) return;
 	int dx = x - mouseX;
 
 	if (dx) {
@@ -2185,6 +2261,7 @@ void myMotion(int x, int y)
 //=======================================================================
 void myMouse(int button, int state, int x, int y)
 {
+	if (win) return;
 	y = HEIGHT - y;
 	x = WIDTH - x;
 
@@ -2195,6 +2272,7 @@ void myMouse(int button, int state, int x, int y)
 
 void pressMotion(int x, int y)
 {
+	if (win) return;
 	int dy = y - mouseY;
 
 	if (dy)
@@ -2215,6 +2293,7 @@ void pressMotion(int x, int y)
 //=======================================================================
 void myReshape(int w, int h)
 {
+	if (win) return;
 	if (h == 0) {
 		h = 1;
 	}
@@ -2271,7 +2350,7 @@ void LoadAssets()
 	model_pond.Load("Models/house/pond.3DS");
 	model_gem[0].Load("Models/gems/gem3.3DS");
 	model_gem[1].Load("Models/gems/gem4.3DS");
-	model_gate.Load("Models/gate/portal.3DS");
+	model_gate_level1.Load("Models/gate/portal.3DS");
 	model_key.Load("Models/key/redKey.3DS");
 	model_key_loaded.Load("Models/key/redKey.3DS");
 	model_key_taken.Load("Models/key/redKey.3DS");
@@ -2296,6 +2375,7 @@ void LoadAssets()
 	model_portal[1].Load("models/portal/portal2.3DS");
 	model_portal[2].Load("models/portal/portal3.3DS");
 	model_portal[3].Load("models/portal/portal4.3DS");
+	model_gate_level2.Load("models/gate/gate2.3DS");
 
 
 	// Loading texture files
