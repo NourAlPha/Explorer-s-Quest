@@ -45,8 +45,10 @@ float statueAngleSpeed[50];
 float statuePos[50][3];
 float statueFallingPos[50];
 int statueFallDir[50];
+float statueEndPoint[50][3];
 int cntRock;
 float rockPos[50][4];
+bool isDead = false;
 
 struct Point {
 	float x, y;
@@ -193,6 +195,11 @@ public:
 	{
 		return Vector3f(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
 	}
+
+	double length()
+	{
+		return sqrt(x * x + y * y + z * z);
+	}
 };
 
 
@@ -330,6 +337,37 @@ public:
 		up = Vector3f(-0.368009, 0.928631, -0.047049);
 	}
 };
+
+float dotProduct(const Vector3f& v1, const Vector3f& v2) {
+	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+float distancePointToLine(Vector3f& point, Vector3f& linePoint1, Vector3f& linePoint2) {
+	// Calculate the direction vector of the line
+	Vector3f lineDirection = linePoint2 - linePoint1;
+
+	// Calculate the vector from one line point to the given point
+	Vector3f fromLinePoint = point - linePoint1;
+
+	// Calculate the projection of the vector onto the line direction
+	float projection = dotProduct(fromLinePoint, lineDirection) / dotProduct(lineDirection, lineDirection);
+
+	// Check if the projection is outside the bounds of the line segment
+	if (projection < 0.0f) {
+		// The projection is before the start of the line segment
+		return fromLinePoint.length(); // Return the distance to the start point
+	}
+	else if (projection > 1.0f) {
+		// The projection is after the end of the line segment
+		Vector3f fromLinePoint2 = point - linePoint2;
+		return fromLinePoint2.length(); // Return the distance to the end point
+	}
+	else {
+		// The projection is within the bounds of the line segment
+		Vector3f projectedPoint = linePoint1 + lineDirection * projection;
+		return (point - projectedPoint).length(); // Return the distance to the projected point
+	}
+}
 
 class Vector
 {
@@ -1338,6 +1376,9 @@ void drawRock(){
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
 	statuePos[cntStatue][2] = 114;
 	statueFallDir[cntStatue] = -1;
+	statueEndPoint[cntStatue][0] = 45;
+	statueEndPoint[cntStatue][1] = statueFallingPos[cntStatue] - 1.5 - sin(DEG2RAD(statueAngle[cntStatue] - 90)) * 21.5;
+	statueEndPoint[cntStatue][2] = 114 + cos(DEG2RAD(statueAngle[cntStatue] - 90)) * 21.5;
 	glPushMatrix();
 	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
 	glScaled(3, 3, 3);
@@ -1350,6 +1391,9 @@ void drawRock(){
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
 	statuePos[cntStatue][2] = 91.3;
 	statueFallDir[cntStatue] = 1;
+	statueEndPoint[cntStatue][0] = 15;
+	statueEndPoint[cntStatue][1] = statueFallingPos[cntStatue] - 1.5 - sin(DEG2RAD(statueAngle[cntStatue] - 90)) * 30;
+	statueEndPoint[cntStatue][2] = 91.3 + cos(DEG2RAD(statueAngle[cntStatue] - 90)) * 30;
 	glPushMatrix();
 	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
 	glScaled(3.7, 3.7, 3.7);
@@ -1362,6 +1406,9 @@ void drawRock(){
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
 	statuePos[cntStatue][2] = 112;
 	statueFallDir[cntStatue] = -1;
+	statueEndPoint[cntStatue][0] = -20;
+	statueEndPoint[cntStatue][1] = statueFallingPos[cntStatue] - 1.5 - sin(DEG2RAD(statueAngle[cntStatue] - 90)) * 33;
+	statueEndPoint[cntStatue][2] = 112 + cos(DEG2RAD(statueAngle[cntStatue] - 90)) * 33;
 	glPushMatrix();
 	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
 	glScaled(4, 4, 4);
@@ -1374,6 +1421,9 @@ void drawRock(){
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
 	statuePos[cntStatue][2] = 87.8;
 	statueFallDir[cntStatue] = 1;
+	statueEndPoint[cntStatue][0] = -55;
+	statueEndPoint[cntStatue][1] = statueFallingPos[cntStatue] - 1.5 - sin(DEG2RAD(statueAngle[cntStatue] - 90)) * 33;
+	statueEndPoint[cntStatue][2] = 87.8 + cos(DEG2RAD(statueAngle[cntStatue] - 90)) * 33;
 	glPushMatrix();
 	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
 	glScaled(4, 4, 4);
@@ -1386,6 +1436,9 @@ void drawRock(){
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
 	statuePos[cntStatue][2] = 110;
 	statueFallDir[cntStatue] = -1;
+	statueEndPoint[cntStatue][0] = -100;
+	statueEndPoint[cntStatue][1] = statueFallingPos[cntStatue] - 1.5 - sin(DEG2RAD(statueAngle[cntStatue] - 90)) * 21.5;
+	statueEndPoint[cntStatue][2] = 110 + cos(DEG2RAD(statueAngle[cntStatue] - 90)) * 21.5;
 	glPushMatrix();
 	glTranslated(statuePos[cntStatue][0], statuePos[cntStatue][1], statuePos[cntStatue][2]);
 	glScaled(3, 3, 3);
@@ -1654,6 +1707,19 @@ void drawSquare2()
 	glPopMatrix();
 }
 
+void checkCollisionFallingStatue()
+{
+	if (!sailingRock)return;
+	for (int i = 0; i < cntStatue; i++) {
+		Vector3f player = Vector3f(playerX, 2.2, playerY);
+		Vector3f startPos = Vector3f(statuePos[i][0], statuePos[i][1], statuePos[i][2]);
+		Vector3f endPos = Vector3f(statueEndPoint[i][0], statueEndPoint[i][1], statueEndPoint[i][2]);
+		if (distancePointToLine(player, startPos, endPos) <= 5) {
+			isDead = true;
+		}
+	}
+}
+
 void myDisplay2()
 {
 
@@ -1698,9 +1764,19 @@ void myDisplay2()
 	
 	playerFallingCoord += acceleration;
 
-	playerIsFalling = playerFallingCoord <= 0;
+	playerIsFalling = false;
 	handleFallPlayer();	
 
+	checkCollisionFallingStatue();
+	if (isDead) {
+		playerX = 50;
+		playerY = 0;
+		playerFallingCoord = 0.0f;
+		explorerCameraTP.refresh();
+		explorerCameraFP.resetFP();
+		isDead = false;
+		sailingRock = false;
+	}
 
 	jumpDelay -= 0.5;
 	if (jumpDelay < 0)jumpDelay = 0;
