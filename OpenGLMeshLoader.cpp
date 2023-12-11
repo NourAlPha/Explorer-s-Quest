@@ -23,8 +23,9 @@ void handleMovement();
 bool isPlayerFalling = false;
 float fallingAnimSpeed = 0.1f;
 float playerFallingCoord = 0.0f;
-bool firstLevel = false;
+bool firstLevel = true;
 bool moveLeft, moveRight, moveForward, moveBackward;
+int constant = 4;
 float resetJumpDelay = 40;
 float jumpDelay = resetJumpDelay;
 float teleportPosX = -125.233, teleportPosY = 48.8299;
@@ -50,6 +51,7 @@ float statueEndPoint[50][3];
 int cntRock;
 float rockPos[100][4];
 bool isDead = false;
+
 
 struct Point {
 	float x, y;
@@ -834,7 +836,7 @@ void drawPlayer() {
 
 
 	for (int i = 0; i < 21; i++) {
-		if (i == cnt/4) {
+		if (i == cnt/constant) {
 			glPushMatrix();
 			glScaled(0.15, 0.23, 0.15);
 			model_explorer[i].Draw();
@@ -1727,6 +1729,71 @@ void drawGateLv2() {
 	}
 }
 
+//=======================================================================
+// Function to check collision between the player and gems
+//=======================================================================
+bool checkCollisionGem() {
+	if (!firstLevel)return false;
+	for (int i = 0; i < 24; ++i) {
+		if (gemExists[i]) {
+			float gemX = gemPositions[i][0];
+			float gemZ = gemPositions[i][1];
+			float distance = sqrt((playerX - gemX) * (playerX - gemX) + (playerY - gemZ) * (playerY - gemZ));
+
+			if (distance < playerBoundingRadius + objectBoundingRadius) {
+				// Collision detected, remove the gem
+				gemExists[i] = false;
+				score[(int)gemPositions[i][2]]++;
+				engine->play2D("Sounds/pickup.wav", false);
+				return true;
+			}
+		}
+	}
+	return false; // No collision detected
+}
+
+//=======================================================================
+// Function to check collision between the player and key
+//=======================================================================
+
+bool checkCollisionKey(float playerX, float playerY) {
+	if (!firstLevel)return false;
+	float distance = sqrt((playerX + 25) * (playerX + 25) + (playerY + 25) * (playerY + 25));
+	if (distance < playerBoundingRadius + objectBoundingRadius) {
+		if (score[0] == 12) {
+			keyID = 0;
+		}
+		return true;
+	}
+	distance = sqrt((playerX + 25) * (playerX + 25) + (playerY - 25) * (playerY - 25));
+	if (distance < playerBoundingRadius + objectBoundingRadius) {
+		if (score[1] == 12) {
+			keyID = 1;
+		}
+		return true;
+	}
+	return false; // No collision detected
+}
+
+//=======================================================================
+// Function to check collision between the player and statue2
+//=======================================================================
+
+bool checkCollisionStatue2(float playerX, float playerY) {
+	if (!firstLevel)return false;
+	float distance = sqrt((playerX - 30) * (playerX - 30) + (playerY - 7) * (playerY - 7));
+	if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
+		if (keyID == 1)
+			return true;
+	}
+	distance = sqrt((playerX - 30) * (playerX - 30) + (playerY + 7) * (playerY + 7));
+	if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
+		if (keyID == 0)
+			return true;
+	}
+	return false; // No collision detected
+}
+
 void myDisplay1()
 {
 
@@ -1739,22 +1806,55 @@ void myDisplay1()
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
+	if (firstTime) {
+		constant = 1;
+		firstTime = false;
+		playerX = 5.0f;
+		playerY = 1.5f;
+		explorerCameraTP.refresh();
+		explorerCameraFP.resetFP();
+	}
+
 	// Draw Ground
 	RenderGround();
 	if (keyLoaded && keyLoaded2)
 		RenderVortex();
 
 	handleMovement();
+	checkCollisionGem();
 
 	if (playerX >= 43.5 && playerX <= 46.5 && playerY >= -1 && playerY <= 1 && keyLoaded && keyLoaded2)
 	{
 		firstLevel = false;
+		firstTime = true;
 		playerX = 5.0f;
 		playerY = 1.5f;
 		playerFallingCoord = 0.0f;
 		explorerCameraTP.refresh();
 		explorerCameraFP.resetFP();
 		return;
+	}
+
+	if (checkCollisionKey(playerX, playerY) && !keyTaken) {
+		if (!keyLoaded2 && keyID == 0) {
+			engine->play2D("Sounds/item-pick-up.mp3");
+			keyTaken = true;
+		}
+		if (!keyLoaded && keyID == 1) {
+			engine->play2D("Sounds/item-pick-up.mp3");
+			keyTaken = true;
+		}
+	}
+	if (checkCollisionStatue2(playerX, playerY) && keyTaken) {
+		keyTaken = false;
+		engine->play2D("Sounds/unlock.wav", false);
+		if (keyID == 0)
+			keyLoaded2 = true;
+		else
+			keyLoaded = true;
+		if (keyLoaded && keyLoaded2)
+			engine->play2D("Sounds/energyflow.wav", false);
+		keyID = -1;
 	}
 
 
@@ -1809,8 +1909,6 @@ void myDisplay1()
 void myDisplay2()
 {
 
-	cout << playerX << " " << playerY << '\n';
-
 	setupCamera();
 	curRock += 0.03;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1819,6 +1917,15 @@ void myDisplay2()
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+
+	if (firstTime) {
+		constant = 4;
+		firstTime = false;
+		playerX = 50;
+		playerY = 0;
+		explorerCameraTP.refresh();
+		explorerCameraFP.resetFP();
+	}
 
 	RenderCaveGround();
 	drawSky(tex_cave, 300);
@@ -1904,8 +2011,10 @@ void myDisplay2()
 
 void myDisplay(void)
 {
-
-	myDisplay2();
+	if (firstLevel)
+		myDisplay1();
+	else
+		myDisplay2();
 }
 
 //=======================================================================
@@ -1927,52 +2036,6 @@ bool checkCollisionTree(float playerX, float playerY) {
 	}
 	return false; // No collision detected
 }
-//=======================================================================
-// Function to check collision between the player and gems
-//=======================================================================
-
-	bool checkCollisionGem(float playerX, float playerY) {
-		if (!firstLevel)return false;
-		for (int i = 0; i < 24; ++i) {
-			if (gemExists[i]) {
-				float gemX = gemPositions[i][0];
-				float gemZ = gemPositions[i][1];
-				float distance = sqrt((playerX - gemX) * (playerX - gemX) + (playerY - gemZ) * (playerY - gemZ));
-
-				if (distance < playerBoundingRadius + objectBoundingRadius) {
-					// Collision detected, remove the gem
-					gemExists[i] = false;
-					score[(int)gemPositions[i][2]]++;
-					engine->play2D("Sounds/pickup.wav", false);
-					return true;
-				}
-			}
-		}
-		return false; // No collision detected
-	}
-
-//=======================================================================
-// Function to check collision between the player and key
-//=======================================================================
-
-	bool checkCollisionKey(float playerX, float playerY) {
-		if (!firstLevel)return false;
-		float distance = sqrt((playerX + 25) * (playerX + 25) + (playerY + 25) * (playerY + 25));
-		if (distance < playerBoundingRadius + objectBoundingRadius) {
-			if (score[0] == 12) {
-				keyID = 0;
-			}
-			return true;
-		}
-		distance = sqrt((playerX + 25) * (playerX + 25) + (playerY - 25) * (playerY - 25));
-		if (distance < playerBoundingRadius + objectBoundingRadius) {
-			if (score[1] == 12) {
-				keyID = 1;
-			}
-			return true;
-		}
-		return false; // No collision detected
-	}
 
 //=======================================================================
 // Function to check collision between the player and statue
@@ -1987,31 +2050,11 @@ bool checkCollisionTree(float playerX, float playerY) {
 		return false; // No collision detected
 	}
 
-//=======================================================================
-// Function to check collision between the player and statue2
-//=======================================================================
-
-	bool checkCollisionStatue2(float playerX, float playerY) {
-		if (!firstLevel)return false;
-		float distance = sqrt((playerX - 30) * (playerX - 30) + (playerY - 7) * (playerY - 7));
-		if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
-			if(keyID == 1)
-			return true;
-		}
-		distance = sqrt((playerX - 30) * (playerX - 30) + (playerY + 7) * (playerY + 7));
-		if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
-			if (keyID == 0)
-				return true;
-		}
-		return false; // No collision detected
-	}
-
 	bool checkOkSailing(float x, float y)
 	{
 		if (firstLevel)return true;
 		if (!sailingRock)return true;
 		vector<Point> player = { Point(x, y) };
-		cout << "HERE: " << doPolygonsIntersect(player, polygon1) << " " << doPolygonsIntersect(player, polygon2) << '\n';
 		if(doPolygonsIntersect(player, polygon1) || doPolygonsIntersect(player, polygon2))
 			return true;
 		return false;
@@ -2025,13 +2068,13 @@ bool checkCollisionTree(float playerX, float playerY) {
 void handleMovement()
 	{
 		if (win) return;
-		float moveSpeed = 0.05f; // Adjust the speed as needed
+		float moveSpeed = !firstLevel ? 0.05 : 0.1; // Adjust the speed as needed
 		float rotationAngle = 5.0f; // Adjust the rotation angle as needed
 		Vector3f view = explorerCameraTP.center - explorerCameraTP.eye;
 
 		if (moveForward || moveBackward || moveRight || moveLeft) {
 			cnt++;
-			if (cnt > 80) cnt = 0;
+			if (cnt > 20 * constant) cnt = 0;
 		}
 
 		if (moveForward && moveLeft) {
@@ -2065,8 +2108,8 @@ void handleMovement()
 		if (moveForward) {
 			if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && 
 				checkOkSailing(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
-				!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && !playerIsFalling &&
-				!checkCollisionGem(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && !isPlayerFalling) {
+				!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && (firstLevel || !firstLevel && !playerIsFalling) &&
+				!isPlayerFalling) {
 				playerY += moveSpeed * view.z;
 				playerX += moveSpeed * view.x;
 				explorerCameraFP.moveZ(moveSpeed * view.z);
@@ -2077,8 +2120,8 @@ void handleMovement()
 		else if(moveBackward){
 			if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
 				checkOkSailing(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
-				!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && !playerIsFalling &&
-				!checkCollisionGem(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && !isPlayerFalling) {
+				!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && (firstLevel || !firstLevel && !playerIsFalling) &&
+				!isPlayerFalling) {
 				playerY -= moveSpeed * view.z;
 				playerX -= moveSpeed * view.x;
 				explorerCameraFP.moveZ(-moveSpeed * view.z);
@@ -2089,8 +2132,8 @@ void handleMovement()
 		if (moveRight) {
 			if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
 				checkOkSailing(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
-				!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && !playerIsFalling &&
-				!checkCollisionGem(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && !isPlayerFalling) {
+				!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && (firstLevel || !firstLevel && !playerIsFalling) &&
+				!isPlayerFalling) {
 				playerY += moveSpeed * view.x;
 				playerX -= moveSpeed * view.z;
 				explorerCameraFP.moveZ(moveSpeed * view.x);
@@ -2101,8 +2144,8 @@ void handleMovement()
 		else if(moveLeft){
 			if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
 				checkOkSailing(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
-				!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && !playerIsFalling &&
-				!checkCollisionGem(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && !isPlayerFalling) {
+				!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && (firstLevel || !firstLevel && !playerIsFalling) &&
+				!isPlayerFalling) {
 				playerY -= moveSpeed * view.x;
 				playerX += moveSpeed * view.z;
 				explorerCameraFP.moveZ(-moveSpeed * view.x);
@@ -2114,7 +2157,12 @@ void handleMovement()
 
 void myKeyboard(unsigned char button, int x, int y) {
 	float moveSpeed = 0.1f; // Adjust the speed as needed
-	if (win) return;
+	if (win) {
+		if (button == 27) {
+			exit(0);
+		}
+		return;
+	}
 
 	switch (button) {
 	case ' ':
@@ -2169,27 +2217,6 @@ void myKeyboard(unsigned char button, int x, int y) {
 		break;
 	default:
 		break;
-	}
-	if (checkCollisionKey(playerX, playerY) && !keyTaken) {
-		if (!keyLoaded2 && keyID == 0) {
-			engine->play2D("Sounds/item-pick-up.mp3");
-			keyTaken = true;
-		}
-		if (!keyLoaded && keyID == 1) {
-			engine->play2D("Sounds/item-pick-up.mp3");
-			keyTaken = true;
-		}
-	}
-	if (checkCollisionStatue2(playerX, playerY) && keyTaken) {
-		keyTaken = false;
-		engine -> play2D("Sounds/unlock.wav", false);
-		if(keyID == 0)
-			keyLoaded2 = true;
-		else 
-			keyLoaded = true;
-		if(keyLoaded && keyLoaded2)
-			engine->play2D("Sounds/energyflow.wav", false);
-		keyID = -1;
 	}
 	glutPostRedisplay();
 }
