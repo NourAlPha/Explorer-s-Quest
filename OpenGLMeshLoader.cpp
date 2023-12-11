@@ -2292,7 +2292,7 @@ void LoadAssets()
 	model_rock[7].Load("Models/rocks/rock7/rock3.3DS");
 	model_rock[8].Load("Models/wall/wall1.3DS");
 	model_crystal.Load("Models/house/diamond.3DS");
-	model_portal[0].Load("models/car1.3DS");
+	model_portal[0].Load("models/portal/portal1.3DS");
 	model_portal[1].Load("models/portal/portal2.3DS");
 	model_portal[2].Load("models/portal/portal3.3DS");
 	model_portal[3].Load("models/portal/portal4.3DS");
