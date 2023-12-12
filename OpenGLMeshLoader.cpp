@@ -29,7 +29,7 @@ int constant = 4;
 float resetJumpDelay = 40;
 float jumpDelay = resetJumpDelay;
 float teleportPosX = -125.233, teleportPosY = 48.8299;
-float teleport2PosX = -162.88 , teleport2PosY = 99.7334;
+float teleport2PosX = -162.88, teleport2PosY = 99.7334;
 float teleportWidth = 2, teleportHeight = 2;
 bool sailingRock = false;
 float sailingRockX = 78.5, sailingRockY = 108.1;
@@ -55,6 +55,8 @@ bool isDead = false;
 float followDragonX = 0, followDragonY = 0;
 float followDragonAngle = 180;
 float rotateFollowDragonKeyboard = 0;
+int cntTrees = 0;
+int cntGems = 0;
 
 
 struct Point {
@@ -98,8 +100,8 @@ bool doPolygonsIntersect(const std::vector<Point>& polygonA, const std::vector<P
 	return false;
 }
 
-vector<Point> polygon1 = {Point(80, 97), Point(80, 118), Point(-50, 116), Point(-50, 79)};
-vector<Point> polygon2 = {Point(-50, 82), Point(-50, 116), Point(-126, 114), Point(-126, 92)};
+vector<Point> polygon1 = { Point(80, 97), Point(80, 118), Point(-50, 116), Point(-50, 79) };
+vector<Point> polygon2 = { Point(-50, 82), Point(-50, 116), Point(-126, 114), Point(-126, 92) };
 
 float cameraSpeedX = 0.1f, cameraSpeedY = 0.001f;
 float playerX = 50;
@@ -107,9 +109,9 @@ float playerY = 0;
 float playerAngle = 180.0f; // Initial angle
 float rotatePlayerKeyboard = 0;
 float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
-float coinPos = 0 , coinAdd = 0.001, coinRotation = 0;
+float coinPos = 0, coinAdd = 0.001, coinRotation = 0;
 float curRock = 0;
-bool keyTaken = false , keyLoaded = false;
+bool keyTaken = false, keyLoaded = false;
 bool keyLoaded2 = false;
 float acceleration = 0;
 bool fallingSoundOn = false;
@@ -120,34 +122,34 @@ float statueX = 18.0; // Update with the actual x position of the statue
 float statueZ = 0.0; // Update with the actual z position of the statue
 
 // Define fixed positions for palm trees (adjust as desired)
-float gemPositions[50][3];
+float gemPositions[100][3];
 
-vector<bool> gemExists (50 , true); // Array to track gem existence
+vector<bool> gemExists(100, true); // Array to track gem existence
 
 // Array to hold tree positions
 const int numTrees = 100;
-float treePositions[numTrees][2];
+float treePositions[numTrees][3];
 
 
 // Define the number of trees and the grid parameters
 int cnt = 0;
 
 
-float playerBoundingRadius = 0.5f; 
+float playerBoundingRadius = 0.5f;
 float objectBoundingRadius = 0.5f;
 
 float yLook = 1.5f;
 
 int score[2];
 
-int mouseX = WIDTH/2;
-int mouseY = HEIGHT/2;
+int mouseX = WIDTH / 2;
+int mouseY = HEIGHT / 2;
 int keyID = -1;
 
 bool isFP = true;
 bool firstTime = true;
 float coinPositions[50][3];
-vector<bool> coinExists(50 , true);
+vector<bool> coinExists(50, true);
 float crystalPositions[3][2];
 vector<bool> crystalExists(3, true);
 int cntCoins = 0;
@@ -219,7 +221,7 @@ class Camera
 public:
 	Vector3f eye, center, up;
 
-	Camera(float eyeX, float eyeY , float eyeZ , float centerX , float centerY , float centerZ , float upX , float upY , float upZ )
+	Camera(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ)
 	{
 		eye = Vector3f(eyeX, eyeY, eyeZ);
 		center = Vector3f(centerX, centerY, centerZ);
@@ -228,7 +230,7 @@ public:
 
 	void moveX(float d)
 	{
-		Vector3f right = Vector3f(1,0,0);
+		Vector3f right = Vector3f(1, 0, 0);
 		eye = eye + right * d;
 		center = center + right * d;
 	}
@@ -241,7 +243,7 @@ public:
 
 	void moveZ(float d)
 	{
-		Vector3f view = Vector3f(0,0,1);
+		Vector3f view = Vector3f(0, 0, 1);
 		eye = eye + view * d;
 		center = center + view * d;
 	}
@@ -424,7 +426,7 @@ Model_3DS model_dragon[31];
 Model_3DS model_dragon2[31];
 Model_3DS model_dragon3[34];
 Model_3DS model_forest;
- 
+
 
 Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
 	playerX + sin(DEG2RAD(cameraPosX)) * 3, 2.3, playerY - cos(DEG2RAD(cameraPosY)) * 3,
@@ -456,7 +458,7 @@ void Anim()
 	}
 	keyPos += keyAdd;
 	keyRotation += 5;
-	
+
 	if (coinPos >= 0.3) {
 		coinAdd = -0.001;
 	}
@@ -574,13 +576,13 @@ void RenderGround()
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);	// Set quad normal direction.
 	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-	glVertex3f(-50, 0, -50);
+	glVertex3f(-100, 0, -100);
 	glTexCoord2f(5, 0);
-	glVertex3f(50, 0, -50);
+	glVertex3f(100, 0, -100);
 	glTexCoord2f(5, 5);
-	glVertex3f(50, 0, 50);
+	glVertex3f(100, 0, 100);
 	glTexCoord2f(0, 5);
-	glVertex3f(-50, 0, 50);
+	glVertex3f(-100, 0, 100);
 	glEnd();
 	glPopMatrix();
 
@@ -623,7 +625,7 @@ void RenderVortex()
 	glPushMatrix();
 
 	glTranslatef(45, 1.5, 0);
-	glRotated(90 , 0, 1, 0);
+	glRotated(90, 0, 1, 0);
 	/*ang = fmod(ang + PORTAL_SPEED, 360);
 	glTranslatef(0, PORTAL_SIDE / 2, 0);
 	glRotatef(ang, 0.0f, 0.0f, 1.0f);*/
@@ -653,7 +655,7 @@ void setupCamera()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60, (WIDTH+0.0) / HEIGHT, 0.001, 1000);
+	gluPerspective(60, (WIDTH + 0.0) / HEIGHT, 0.001, 1000);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -670,7 +672,7 @@ float randomFloat(float min, float max) {
 	return ((float)rand() / RAND_MAX) * (max - min) + min;
 }
 
-void drawGem(float x, float z, int index , int type) {
+void drawGem(float x, float z, int index, int type) {
 	if (gemExists[index]) {
 		// Draw 5 gems at fixed but scattered locations on the ground
 		glPushMatrix();
@@ -688,30 +690,16 @@ void drawGem(float x, float z, int index , int type) {
 // Display Function
 //=======================================================================
 
-void drawGems() {
-	int counter2 = 0;
-	for (int i = 0, x = -33; i < 6; ++i, x += 3) {
-		float y = sqrt(72 - (x + 25) * (x + 25)) - 25;
-		drawGem(x, y, counter2, 0);
-		gemPositions[counter2][0] = x;
-		gemPositions[counter2++][1] = y;
-		y = -sqrt(72 - (x + 25) * (x + 25)) - 25;
-		drawGem(x, y, counter2, 0);
-		gemPositions[counter2][0] = x;
-		gemPositions[counter2++][1] = y;
-	}
-
-	for (int i = 0, x = -33; i < 6; ++i, x += 3) {
-		float y = sqrt(72 - (x + 25) * (x + 25)) + 25;
-		drawGem(x, y, counter2, 1);
-		gemPositions[counter2][0] = x;
-		gemPositions[counter2][2] = 1;
-		gemPositions[counter2++][1] = y;
-		y = -sqrt(72 - (x + 25) * (x + 25)) + 25;
-		drawGem(x, y, counter2, 1);
-		gemPositions[counter2][0] = x;
-		gemPositions[counter2][2] = 1;
-		gemPositions[counter2++][1] = y;
+void drawGems(float centerX, float centerY, float radius) {
+	for (int i = 0, x = -radius + centerX; i < 11; ++i, x += 3) {
+		float y = sqrt(radius*radius - (x - centerX) * (x - centerX)) + centerY;
+		drawGem(x, y, cntGems, 0);
+		gemPositions[cntGems][0] = x;
+		gemPositions[cntGems++][1] = y;
+		y = -sqrt(radius*radius - (x - centerX) * (x - centerX)) + centerY;
+		drawGem(x, y, cntGems, 0);
+		gemPositions[cntGems][0] = x;
+		gemPositions[cntGems++][1] = y;
 	}
 }
 void drawTrees() {
@@ -850,7 +838,7 @@ void drawPlayer() {
 
 
 	for (int i = 0; i < 21; i++) {
-		if (i == cnt/constant) {
+		if (i == cnt / constant) {
 			glPushMatrix();
 			glScaled(0.15, 0.23, 0.15);
 			model_explorer[i].Draw();
@@ -968,7 +956,7 @@ void drawSpecialRock(float angle, float radius) {
 	rockPos[cntRock++][3] = 1;
 }
 
-void drawSky(GLuint tex , int radius) {
+void drawSky(GLuint tex, int radius) {
 	glPushMatrix();
 
 	GLUquadricObj* qobj;
@@ -1012,7 +1000,7 @@ void RenderCaveGround()
 
 	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
 }
-void drawRock(){
+void drawRock() {
 
 	cntRock = 0;
 	glPushMatrix();
@@ -1367,7 +1355,7 @@ void drawRock(){
 	glRotated(statueAngle[cntStatue++], 0, 0, 1);
 	model_statue.Draw();
 	glPopMatrix();
-	
+
 	statuePos[cntStatue][0] = -55;
 	statuePos[cntStatue][1] = -1.5 + statueFallingPos[cntStatue];
 	statuePos[cntStatue][2] = 87.8;
@@ -1510,7 +1498,7 @@ void drawRock(){
 
 
 }
-void drawCoin(float x, float z , Model_3DS coin) {
+void drawCoin(float x, float z, Model_3DS coin) {
 	if (coinExists[cntCoins]) {
 		// Draw 5 gems at fixed but scattered locations on the ground
 		glPushMatrix();
@@ -1590,8 +1578,10 @@ void fallStatue()
 void handleFallingStatues()
 {
 	for (int i = 0; i < cntStatue; i++) {
-		if ((playerX - statuePos[i][0]) * (playerX - statuePos[i][0]) + 
+		if ((playerX - statuePos[i][0]) * (playerX - statuePos[i][0]) +
 			(playerY - statuePos[i][2]) * (playerY - statuePos[i][2]) <= 400) {
+			if (statueAngleSpeed[i] == 0)
+				engine->play2D("Sounds/statue.mp3");
 			statueAngleSpeed[i] = statueFallDir[i] * 0.5;
 		}
 	}
@@ -1722,7 +1712,7 @@ void checkCollisionFallingStatue()
 	}
 }
 void drawPortal() {
-	if (!crystalExists[0]){
+	if (!crystalExists[0]) {
 		glPushMatrix();
 		glTranslated(-125, -1, 50);
 		glRotated(-90, 0, 1, 0);
@@ -1753,7 +1743,7 @@ void drawGateLv2() {
 //=======================================================================
 bool checkCollisionGem() {
 	if (!firstLevel)return false;
-	for (int i = 0; i < 24; ++i) {
+	for (int i = 0; i < cntGems; ++i) {
 		if (gemExists[i]) {
 			float gemX = gemPositions[i][0];
 			float gemZ = gemPositions[i][1];
@@ -1795,7 +1785,7 @@ bool checkCollisionKey(float playerX, float playerY) {
 }
 void drawDragon() {
 	glPushMatrix();
-	glTranslated(-50, 15 , -70);
+	glTranslated(-50, 15, -70);
 	glRotated(dragonAngle, 0, 1, 0);
 	glTranslated(-100, 0, 0);
 	glScaled(10, 10, 10);
@@ -1826,19 +1816,57 @@ void drawDragon() {
 	model_dragon[(int)cntDragon].Draw();
 	glPopMatrix();
 }
-void drawForest() {
+void drawForest(float posX, float posY, float scale) {
 	glPushMatrix();
-	glTranslated(0, -3, 0);
-	glScaled(4, 4, 4);
+	glTranslated(posX, -3, posY);
+	glScaled(scale, scale, scale);
 	model_forest.Draw();
 	glPopMatrix();
 
-	glPushMatrix();
-	glTranslated(20, -3, 30);
-	glScaled(2, 2, 2);
-	model_forest.Draw();
-	glPopMatrix();
+	treePositions[cntTrees][0] = -24.1 + posX;
+	treePositions[cntTrees][1] = -14.2 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
 
+	treePositions[cntTrees][0] = -29 + posX;
+	treePositions[cntTrees][1] = 8 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+
+	treePositions[cntTrees][0] = -28.1 + posX;
+	treePositions[cntTrees][1] = -35.1 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+
+	treePositions[cntTrees][0] = -45.6 + posX;
+	treePositions[cntTrees][1] = -13.3 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+
+	treePositions[cntTrees][0] = -6.2 + posX;
+	treePositions[cntTrees][1] = -27.6 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+
+	treePositions[cntTrees][0] = -45 + posX;
+	treePositions[cntTrees][1] = 18.9 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+
+	treePositions[cntTrees][0] = 24 + posX;
+	treePositions[cntTrees][1] = -10.6 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+
+	treePositions[cntTrees][0] = 16.5 + posX;
+	treePositions[cntTrees][1] = -31.8 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+
+	treePositions[cntTrees][0] = -29.5 + posX;
+	treePositions[cntTrees][1] = 31.2 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+
+	treePositions[cntTrees][0] = -6.78 + posX;
+	treePositions[cntTrees][1] = 26.25 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+
+	treePositions[cntTrees][0] = 1.19 + posX;
+	treePositions[cntTrees][1] = 47.08 + posY;
+	treePositions[cntTrees++][2] = scale / 3;
+	
 }
 
 //=======================================================================
@@ -1862,6 +1890,8 @@ bool checkCollisionStatue2(float playerX, float playerY) {
 
 void myDisplay1()
 {
+	
+	cout << playerX << " " << playerY << '\n';
 
 	setupCamera();
 
@@ -1872,8 +1902,11 @@ void myDisplay1()
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
+	cntTrees = 0;
+	cntGems = 0;
+
 	if (firstTime) {
-		constant = 1;
+		engine->play2D("Sounds/story1.mp3", false);
 		firstTime = false;
 		playerX = 5.0f;
 		playerY = 1.5f;
@@ -1885,6 +1918,22 @@ void myDisplay1()
 	RenderGround();
 	if (keyLoaded && keyLoaded2)
 		RenderVortex();
+	float spacing = 8.0; // Adjust the spacing between trees
+	drawGems(-50, -50, 15);
+	drawGems(-50, 50, 15);
+	drawGems(50, -50, 15);
+	drawGems(50, 50, 15);
+	//drawTrees();
+	drawForest(-50, -50, 5);
+	drawForest(-50, 50, 5);
+	drawForest(50, -50, 5);
+	drawForest(50, 50, 5);
+	drawPonds();
+	drawPlayer();
+	drawStatues();
+	drawGate();
+	RenderSea();
+	drawSky(tex, 300);
 
 	handleMovement();
 	checkCollisionGem();
@@ -1924,7 +1973,7 @@ void myDisplay1()
 	}
 
 
-	if (!isPlayerFalling && (playerX > 50.5 || playerX < -50.5 || playerY > 50.5 || playerY < -50.5)) {
+	if (!isPlayerFalling && (playerX > 100.5 || playerX < -100.5 || playerY > 100.5 || playerY < -100.5)) {
 		isPlayerFalling = true;
 		engine->play2D("Sounds/fall.wav");
 	}
@@ -1959,17 +2008,6 @@ void myDisplay1()
 		glPopMatrix();
 	}
 
-	float spacing = 8.0; // Adjust the spacing between trees
-	drawGems();
-	//drawTrees();
-	drawForest();
-	drawPonds();
-	drawPlayer();
-	drawStatues();
-	drawGate();
-	RenderSea();
-	drawSky(tex, 150);
-
 	glutSwapBuffers();
 
 }
@@ -1986,6 +2024,7 @@ void myDisplay2()
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
 	if (firstTime) {
+		engine->play2D("Sounds/story2.mp3", false);
 		constant = 4;
 		firstTime = false;
 		playerX = 50;
@@ -2002,7 +2041,7 @@ void myDisplay2()
 	drawPlayer();
 	drawRock();
 	drawCoins();
-	checkCollisionCoins(playerX , playerY);
+	checkCollisionCoins(playerX, playerY);
 	drawCrystals();
 	checkCollisionCrystals(playerX, playerY);
 	drawPortal();
@@ -2027,7 +2066,7 @@ void myDisplay2()
 
 	if (!crystalExists[1] && teleport2PosX - teleportWidth <= playerX && playerX <= teleport2PosX + teleportWidth
 		&& teleport2PosY - teleportHeight <= playerY && playerY <= teleport2PosY + teleportHeight) {
-		playerX = -110.698 ;
+		playerX = -110.698;
 		playerY = 51.3945;
 		explorerCameraTP.refresh();
 		explorerCameraFP.resetFP();
@@ -2042,7 +2081,7 @@ void myDisplay2()
 		sailingRockX = playerX;
 		sailingRockY = playerY;
 	}
-	
+
 	playerFallingCoord += acceleration;
 
 	if (enableFalling) {
@@ -2083,7 +2122,7 @@ void myDisplay2()
 
 void myDisplay(void)
 {
-	
+
 	if (firstLevel)
 		myDisplay1();
 	else
@@ -2102,7 +2141,7 @@ bool checkCollisionTree(float playerX, float playerY) {
 		float distance = sqrt((playerX - treeX) * (playerX - treeX) + (playerY - treeZ) * (playerY - treeZ));
 
 		// Check if the distance between player and tree is less than the sum of their radii
-		if (distance + 0.7 < playerBoundingRadius + objectBoundingRadius) {
+		if (distance <= treePositions[i][2]) {
 			// Collision detected, prevent player from moving
 			return true;
 		}
@@ -2114,129 +2153,129 @@ bool checkCollisionTree(float playerX, float playerY) {
 // Function to check collision between the player and statue
 //=======================================================================
 
-	bool checkCollisionStatue(float playerX, float playerY) {
-		if(!firstLevel)return false;
-		float distance = sqrt((playerX - 18) * (playerX - 18) + (playerY) * (playerY));
-		if (distance - 0.1 < playerBoundingRadius + objectBoundingRadius) {
-			return true;
-		}
-		return false; // No collision detected
+bool checkCollisionStatue(float playerX, float playerY) {
+	if (!firstLevel)return false;
+	float distance = sqrt((playerX - 18) * (playerX - 18) + (playerY) * (playerY));
+	if (distance - 0.1 < playerBoundingRadius + objectBoundingRadius) {
+		return true;
 	}
+	return false; // No collision detected
+}
 
-	bool checkOkSailing(float x, float y)
-	{
-		if (firstLevel)return true;
-		if (!sailingRock)return true;
-		vector<Point> player = { Point(x, y) };
-		if(doPolygonsIntersect(player, polygon1) || doPolygonsIntersect(player, polygon2))
-			return true;
-		return false;
+bool checkOkSailing(float x, float y)
+{
+	if (firstLevel)return true;
+	if (!sailingRock)return true;
+	vector<Point> player = { Point(x, y) };
+	if (doPolygonsIntersect(player, polygon1) || doPolygonsIntersect(player, polygon2))
+		return true;
+	return false;
 
-	}
+}
 
 //=======================================================================
 // Keyboard Function
 //=======================================================================
 
 void handleMovement()
-	{
-		if (win) return;
-		float moveSpeed = !firstLevel ? 0.05 : 0.1; // Adjust the speed as needed
-		float rotationAngle = 5.0f; // Adjust the rotation angle as needed
-		Vector3f view = explorerCameraTP.center - explorerCameraTP.eye;
+{
+	if (win) return;
+	float moveSpeed = 0.05; // Adjust the speed as needed
+	float rotationAngle = 5.0f; // Adjust the rotation angle as needed
+	Vector3f view = explorerCameraTP.center - explorerCameraTP.eye;
 
-		if (moveForward || moveBackward || moveRight || moveLeft) {
-			cnt++;
-			
-			if (cnt > 20 * constant) cnt = 0;
-		}
+	if (moveForward || moveBackward || moveRight || moveLeft) {
+		cnt++;
 
-		if (moveForward && moveLeft) {
-			rotateFollowDragonKeyboard = 45;
-			rotatePlayerKeyboard = 45;
-		}
-		else if (moveForward && moveRight) {
-			rotateFollowDragonKeyboard = -45;
-			rotatePlayerKeyboard = -45;
-		}
-		else if (moveForward) {
-			rotateFollowDragonKeyboard = 0;
-			rotatePlayerKeyboard = 0;
-		}
-		else if (moveBackward && moveLeft) {
-			rotateFollowDragonKeyboard = 135;
-			rotatePlayerKeyboard = 135;
-		}
-		else if (moveBackward && moveRight) {
-			rotateFollowDragonKeyboard = -135;
-			rotatePlayerKeyboard = -135;
-		}
-		else if (moveBackward) {
-			rotateFollowDragonKeyboard = 180;
-			rotatePlayerKeyboard = 180;
-		}
-		else if (moveLeft) {
-			rotateFollowDragonKeyboard = 90;
-			rotatePlayerKeyboard = 90;
-		}
-		else if (moveRight) {
-			rotateFollowDragonKeyboard = -90;
-			rotatePlayerKeyboard = -90;
-		}
-		else {
-			rotateFollowDragonKeyboard = 0;
-			rotatePlayerKeyboard = 0;
-		}
+		if (cnt > 20 * constant) cnt = 0;
+	}
 
-		if (moveForward) {
-			if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && 
-				checkOkSailing(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
-				!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && (firstLevel || !firstLevel && !playerIsFalling) &&
-				!isPlayerFalling) {
-				playerY += moveSpeed * view.z;
-				playerX += moveSpeed * view.x;
-				explorerCameraFP.moveZ(moveSpeed * view.z);
-				explorerCameraFP.moveX(moveSpeed * view.x);
-				explorerCameraTP.refresh();
-			}
-		}
-		else if(moveBackward){
-			if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
-				checkOkSailing(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
-				!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && (firstLevel || !firstLevel && !playerIsFalling) &&
-				!isPlayerFalling) {
-				playerY -= moveSpeed * view.z;
-				playerX -= moveSpeed * view.x;
-				explorerCameraFP.moveZ(-moveSpeed * view.z);
-				explorerCameraFP.moveX(-moveSpeed * view.x);
-				explorerCameraTP.refresh();
-			}
-		}
-		if (moveRight) {
-			if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
-				checkOkSailing(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
-				!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && (firstLevel || !firstLevel && !playerIsFalling) &&
-				!isPlayerFalling) {
-				playerY += moveSpeed * view.x;
-				playerX -= moveSpeed * view.z;
-				explorerCameraFP.moveZ(moveSpeed * view.x);
-				explorerCameraFP.moveX(-moveSpeed * view.z);
-				explorerCameraTP.refresh();
-			}
-		}
-		else if(moveLeft){
-			if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
-				checkOkSailing(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
-				!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && (firstLevel || !firstLevel && !playerIsFalling) &&
-				!isPlayerFalling) {
-				playerY -= moveSpeed * view.x;
-				playerX += moveSpeed * view.z;
-				explorerCameraFP.moveZ(-moveSpeed * view.x);
-				explorerCameraFP.moveX(moveSpeed * view.z);
-				explorerCameraTP.refresh();
-			}
+	if (moveForward && moveLeft) {
+		rotateFollowDragonKeyboard = 45;
+		rotatePlayerKeyboard = 45;
+	}
+	else if (moveForward && moveRight) {
+		rotateFollowDragonKeyboard = -45;
+		rotatePlayerKeyboard = -45;
+	}
+	else if (moveForward) {
+		rotateFollowDragonKeyboard = 0;
+		rotatePlayerKeyboard = 0;
+	}
+	else if (moveBackward && moveLeft) {
+		rotateFollowDragonKeyboard = 135;
+		rotatePlayerKeyboard = 135;
+	}
+	else if (moveBackward && moveRight) {
+		rotateFollowDragonKeyboard = -135;
+		rotatePlayerKeyboard = -135;
+	}
+	else if (moveBackward) {
+		rotateFollowDragonKeyboard = 180;
+		rotatePlayerKeyboard = 180;
+	}
+	else if (moveLeft) {
+		rotateFollowDragonKeyboard = 90;
+		rotatePlayerKeyboard = 90;
+	}
+	else if (moveRight) {
+		rotateFollowDragonKeyboard = -90;
+		rotatePlayerKeyboard = -90;
+	}
+	else {
+		rotateFollowDragonKeyboard = 0;
+		rotatePlayerKeyboard = 0;
+	}
+
+	if (moveForward) {
+		if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
+			checkOkSailing(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
+			!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && (firstLevel || !firstLevel && !playerIsFalling) &&
+			!isPlayerFalling) {
+			playerY += moveSpeed * view.z;
+			playerX += moveSpeed * view.x;
+			explorerCameraFP.moveZ(moveSpeed * view.z);
+			explorerCameraFP.moveX(moveSpeed * view.x);
+			explorerCameraTP.refresh();
 		}
 	}
+	else if (moveBackward) {
+		if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
+			checkOkSailing(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
+			!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && (firstLevel || !firstLevel && !playerIsFalling) &&
+			!isPlayerFalling) {
+			playerY -= moveSpeed * view.z;
+			playerX -= moveSpeed * view.x;
+			explorerCameraFP.moveZ(-moveSpeed * view.z);
+			explorerCameraFP.moveX(-moveSpeed * view.x);
+			explorerCameraTP.refresh();
+		}
+	}
+	if (moveRight) {
+		if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
+			checkOkSailing(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
+			!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && (firstLevel || !firstLevel && !playerIsFalling) &&
+			!isPlayerFalling) {
+			playerY += moveSpeed * view.x;
+			playerX -= moveSpeed * view.z;
+			explorerCameraFP.moveZ(moveSpeed * view.x);
+			explorerCameraFP.moveX(-moveSpeed * view.z);
+			explorerCameraTP.refresh();
+		}
+	}
+	else if (moveLeft) {
+		if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
+			checkOkSailing(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
+			!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && (firstLevel || !firstLevel && !playerIsFalling) &&
+			!isPlayerFalling) {
+			playerY -= moveSpeed * view.x;
+			playerX += moveSpeed * view.z;
+			explorerCameraFP.moveZ(-moveSpeed * view.x);
+			explorerCameraFP.moveX(moveSpeed * view.z);
+			explorerCameraTP.refresh();
+		}
+	}
+}
 
 void myKeyboard(unsigned char button, int x, int y) {
 	float moveSpeed = 0.1f; // Adjust the speed as needed
@@ -2362,7 +2401,7 @@ void myMotion(int x, int y)
 		explorerCameraFP.rotateY(dx * cameraSpeedX);
 	}
 
-	glutWarpPointer(WIDTH/2, HEIGHT/2);
+	glutWarpPointer(WIDTH / 2, HEIGHT / 2);
 	glutPostRedisplay();	//Re-draw scene 
 }
 
@@ -2387,7 +2426,7 @@ void pressMotion(int x, int y)
 
 	if (dy)
 	{
-		if(isFP)
+		if (isFP)
 			explorerCameraFP.updateYCenterFP(-dy * cameraSpeedY);
 		else
 			explorerCameraTP.updateYCenterTP(-dy * cameraSpeedY);
