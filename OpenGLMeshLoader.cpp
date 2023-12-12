@@ -23,7 +23,7 @@ void handleMovement();
 bool isPlayerFalling = false;
 float fallingAnimSpeed = 0.1f;
 float playerFallingCoord = 0.0f;
-bool firstLevel = true;
+bool firstLevel = false;
 bool moveLeft, moveRight, moveForward, moveBackward;
 int constant = 4;
 float resetJumpDelay = 40;
@@ -414,11 +414,13 @@ Vector Up(0, 1, 0);
 
 int cameraZoom = 0;
 
+float lightFlicker = 0.0;
+
 // Model Variables
 Model_3DS model_house;
 Model_3DS model_tree[3];
 Model_3DS model_explorer[21];
-Model_3DS model_gem[2];
+Model_3DS model_gem[4];
 Model_3DS model_statue;
 Model_3DS model_gate_level1;
 Model_3DS model_gate_level2;
@@ -453,8 +455,7 @@ GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground;
 // Animation Function
 //=======================================================================
 
-void Anim()
-{
+void Anim(){
 	cntDragon += 0.3;
 	dragonAngle += 0.3;
 	if (cntDragon > 30) cntDragon = 0;
@@ -475,12 +476,25 @@ void Anim()
 	}
 	coinPos += coinAdd;
 	coinRotation += 1;
+	lightFlicker += 0.1;
+	if (lightFlicker >= 1) {
+		lightIntensity[0] = 0.7;
+		lightIntensity[1] = 0.7;
+		lightIntensity[2] = 0.7;
+	}
 	glutPostRedisplay();
 }
 
 void Timer(int value) {
 
 	timer++;
+	if (timer % 5 == 0) {
+		lightFlicker = 0.4;
+		lightIntensity[0] = 0;
+		lightIntensity[1] = 0;
+		lightIntensity[2] = 0;
+	}
+	
 
 	glutPostRedisplay();
 	glutTimerFunc(1000, Timer, 0);
@@ -692,10 +706,10 @@ void drawGem(float x, float z, int index, int type) {
 	if (gemExists[index]) {
 		// Draw 5 gems at fixed but scattered locations on the ground
 		glPushMatrix();
-		glTranslated(0, -0.7, 0);
+		glTranslated(0, -0.2, 0);
 		glTranslatef(x, keyPos, z);
 		glRotated(keyRotation, 0, 1, 0);
-		glScalef(0.03, 0.045, 0.03);
+		glScalef(0.03, 0.03, 0.03);
 		model_gem[type].Draw();
 		glPopMatrix();
 	}
@@ -709,12 +723,12 @@ void drawGem(float x, float z, int index, int type) {
 void drawGems(float centerX, float centerY, float radius , float type) {
 	for (int i = 0, x = -radius + centerX; i < 11; ++i, x += 3) {
 		float y = sqrt(radius*radius - (x - centerX) * (x - centerX)) + centerY;
-		drawGem(x, y, cntGems, 0);
+		drawGem(x, y, cntGems, type);
 		gemPositions[cntGems][0] = x;
 		gemPositions[cntGems][1] = y;
 		gemPositions[cntGems++][2] = type;
 		y = -sqrt(radius*radius - (x - centerX) * (x - centerX)) + centerY;
-		drawGem(x, y, cntGems, 0);
+		drawGem(x, y, cntGems, type);
 		gemPositions[cntGems][0] = x;
 		gemPositions[cntGems][1] = y;
 		gemPositions[cntGems++][2] = type;
@@ -1615,7 +1629,6 @@ bool checkCollisionCrystals(float playerX, float playerY) {
 	}
 	return false; // No collision detected
 }
-
 void drawSquare(float x, float y, float width, float height)
 {
 	glPushMatrix();
@@ -1659,6 +1672,7 @@ void checkCollisionFallingStatue()
 		Vector3f endPos = Vector3f(statueEndPoint[i][0], statueEndPoint[i][1], statueEndPoint[i][2]);
 		if (distancePointToLine(player, startPos, endPos) <= 5) {
 			isDead = true;
+			engine->play2D("Sounds/hit.wav");	
 		}
 	}
 }
@@ -1720,6 +1734,7 @@ bool checkCollisionKey(float playerX, float playerY) {
 	float distance = sqrt((playerX - 50) * (playerX - 50) + (playerY - 50) * (playerY - 50));
 	if (distance < 2) {
 		if (score[0] == 22) {
+			engine->play2D("Sounds/item-pick-up.mp3", false);
 			key_taken[0] = true;
 			keyTaken = true;
 			return true;
@@ -1729,6 +1744,7 @@ bool checkCollisionKey(float playerX, float playerY) {
 	distance = sqrt((playerX + 50) * (playerX + 50) + (playerY - 50) * (playerY - 50));
 	if (distance < 2) {
 		if (score[2] == 22) {
+			engine->play2D("Sounds/item-pick-up.mp3", false);
 			key_taken[2] = true;
 			keyTaken = true;
 			return true;
@@ -1738,6 +1754,7 @@ bool checkCollisionKey(float playerX, float playerY) {
 	distance = sqrt((playerX - 50) * (playerX - 50) + (playerY + 50) * (playerY + 50));
 	if (distance < 2) {
 		if (score[1] == 22) {
+			engine->play2D("Sounds/item-pick-up.mp3", false);
 			key_taken[1] = true;
 			keyTaken = true;
 			return true;
@@ -1747,6 +1764,7 @@ bool checkCollisionKey(float playerX, float playerY) {
 	distance = sqrt((playerX + 50) * (playerX + 50) + (playerY + 50) * (playerY + 50));
 	if (distance < 2) {
 		if (score[3] == 22) {
+			engine->play2D("Sounds/item-pick-up.mp3", false);
 			key_taken[3] = true;
 			keyTaken = true;
 			return true;
@@ -2083,6 +2101,7 @@ void myDisplay2()
 
 	if (!crystalExists[0] && teleportPosX - teleportWidth <= playerX && playerX <= teleportPosX + teleportWidth
 		&& teleportPosY - teleportHeight <= playerY && playerY <= teleportPosY + teleportHeight) {
+		engine->play2D("Sounds/teleport.mp3", false);
 		sailingRock = true;
 		playerX = sailingRockX;
 		playerY = sailingRockY;
@@ -2092,6 +2111,7 @@ void myDisplay2()
 
 	if (!crystalExists[1] && teleport2PosX - teleportWidth <= playerX && playerX <= teleport2PosX + teleportWidth
 		&& teleport2PosY - teleportHeight <= playerY && playerY <= teleport2PosY + teleportHeight) {
+		engine->play2D("Sounds/teleport.mp3", false);
 		playerX = -110.698;
 		playerY = 51.3945;
 		explorerCameraTP.refresh();
@@ -2523,8 +2543,10 @@ void LoadAssets()
 	model_explorer[20].Load("Models/explorer/charact20.3DS");
 	model_statue.Load("Models/house/column.3DS");
 	model_pond.Load("Models/house/pond.3DS");
-	model_gem[0].Load("Models/gems/gem3.3DS");
-	model_gem[1].Load("Models/gems/gem4.3DS");
+	model_gem[0].Load("Models/gems/green.3DS");
+	model_gem[1].Load("Models/gems/red.3DS");
+	model_gem[2].Load("Models/gems/blue.3DS");
+	model_gem[3].Load("Models/gems/yellow.3DS");
 	model_gate_level1.Load("Models/gate/portal.3DS");
 	model_key[0].Load("Models/key/greenKey.3DS");
 	model_key[1].Load("Models/key/redKey.3DS");
