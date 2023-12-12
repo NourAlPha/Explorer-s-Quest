@@ -112,6 +112,7 @@ float curRock = 0;
 bool keyTaken = false , keyLoaded = false;
 bool keyLoaded2 = false;
 float acceleration = 0;
+bool fallingSoundOn = false;
 
 
 // Define the position of the single statue
@@ -1600,9 +1601,14 @@ void handleFallingStatues()
 void fallPlayer() {
 	if (!playerIsFalling)return;
 
+	if (!fallingSoundOn) {
+		fallingSoundOn = true;
+		engine->play2D("Sounds/fall.wav");
+	}
 	playerFallingCoord -= 0.03;
 
 	if (playerFallingCoord <= -3) {
+		fallingSoundOn = false;
 		playerFallingCoord = 0;
 		playerX = 50;
 		playerY = 0;
