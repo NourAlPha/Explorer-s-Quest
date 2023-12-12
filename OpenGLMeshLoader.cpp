@@ -108,11 +108,13 @@ float playerX = 50;
 float playerY = 0;
 float playerAngle = 180.0f; // Initial angle
 float rotatePlayerKeyboard = 0;
-float keyPos = 1, keyAdd = 0.01, keyRotation = 0;
+float keyPos = 1, keyAdd = 0.005, keyRotation = 0;
 float coinPos = 0, coinAdd = 0.001, coinRotation = 0;
 float curRock = 0;
-bool keyTaken = false, keyLoaded = false;
+bool keyTaken = false, allKeysLoaded = false;
 bool keyLoaded2 = false;
+bool key_taken[4] = { false, false, false, false };
+bool key_loaded[4] = { false, false, false, false };
 float acceleration = 0;
 bool fallingSoundOn = false;
 
@@ -140,11 +142,13 @@ float objectBoundingRadius = 0.5f;
 
 float yLook = 1.5f;
 
-int score[2];
+int score[4];
 
 int mouseX = WIDTH / 2;
 int mouseY = HEIGHT / 2;
 int keyID = -1;
+
+int timer = 0;
 
 bool isFP = true;
 bool firstTime = true;
@@ -166,6 +170,9 @@ GLdouble fovy = 45.0;
 GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
 GLdouble zNear = 0.1;
 GLdouble zFar = 100;
+
+GLfloat lightIntensity[] = { 1, 1, 1, 1.0f };
+GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
 
 class Vector3f
 {
@@ -416,8 +423,9 @@ Model_3DS model_statue;
 Model_3DS model_gate_level1;
 Model_3DS model_gate_level2;
 Model_3DS model_pond;
-Model_3DS model_key, model_key_taken, model_key_loaded;
+Model_3DS model_key1, model_key_taken1, model_key_loaded1;
 Model_3DS model_key2, model_key_taken2, model_key_loaded2;
+Model_3DS model_key[4];
 Model_3DS model_rock[10];
 Model_3DS model_coin[4];
 Model_3DS model_crystal;
@@ -450,14 +458,14 @@ void Anim()
 	cntDragon += 0.3;
 	dragonAngle += 0.3;
 	if (cntDragon > 30) cntDragon = 0;
-	if (keyPos >= 1.3) {
-		keyAdd = -0.01;
+	if (keyPos >= 1.4) {
+		keyAdd = -0.005;
 	}
-	if (keyPos <= 0.7) {
-		keyAdd = 0.01;
+	if (keyPos <= 0.6) {
+		keyAdd = 0.005;
 	}
 	keyPos += keyAdd;
-	keyRotation += 5;
+	keyRotation += 1;
 
 	if (coinPos >= 0.3) {
 		coinAdd = -0.001;
@@ -468,6 +476,14 @@ void Anim()
 	coinPos += coinAdd;
 	coinRotation += 1;
 	glutPostRedisplay();
+}
+
+void Timer(int value) {
+
+	timer++;
+
+	glutPostRedisplay();
+	glutTimerFunc(1000, Timer, 0);
 }
 
 
@@ -624,7 +640,7 @@ void RenderVortex()
 {
 	glPushMatrix();
 
-	glTranslatef(45, 1.5, 0);
+	glTranslatef(0, 1.5, 0);
 	glRotated(90, 0, 1, 0);
 	/*ang = fmod(ang + PORTAL_SPEED, 360);
 	glTranslatef(0, PORTAL_SIDE / 2, 0);
@@ -679,7 +695,7 @@ void drawGem(float x, float z, int index, int type) {
 		glTranslated(0, -0.7, 0);
 		glTranslatef(x, keyPos, z);
 		glRotated(keyRotation, 0, 1, 0);
-		glScalef(0.02, 0.035, 0.02);
+		glScalef(0.03, 0.045, 0.03);
 		model_gem[type].Draw();
 		glPopMatrix();
 	}
@@ -690,133 +706,18 @@ void drawGem(float x, float z, int index, int type) {
 // Display Function
 //=======================================================================
 
-void drawGems(float centerX, float centerY, float radius) {
+void drawGems(float centerX, float centerY, float radius , float type) {
 	for (int i = 0, x = -radius + centerX; i < 11; ++i, x += 3) {
 		float y = sqrt(radius*radius - (x - centerX) * (x - centerX)) + centerY;
 		drawGem(x, y, cntGems, 0);
 		gemPositions[cntGems][0] = x;
-		gemPositions[cntGems++][1] = y;
+		gemPositions[cntGems][1] = y;
+		gemPositions[cntGems++][2] = type;
 		y = -sqrt(radius*radius - (x - centerX) * (x - centerX)) + centerY;
 		drawGem(x, y, cntGems, 0);
 		gemPositions[cntGems][0] = x;
-		gemPositions[cntGems++][1] = y;
-	}
-}
-void drawTrees() {
-	int counter = 0;
-	for (int i = 0, x = -40; i < 6; ++i, x += 6) {
-		float y = sqrt(225 - (x + 25) * (x + 25)) - 25;
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(0.7, 0.7, 0.7);
-		model_tree[0].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
-		y = -sqrt(225 - (x + 25) * (x + 25)) - 25;
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(0.7, 0.7, 0.7);
-		model_tree[0].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
-	}
-
-	for (int i = 0, x = -40; i < 6; ++i, x += 6) {
-		float y = sqrt(225 - (x + 25) * (x + 25)) + 25;
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(0.7, 0.7, 0.7);
-		model_tree[1].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
-		y = -sqrt(225 - (x + 25) * (x + 25)) + 25;
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(0.7, 0.7, 0.7);
-		model_tree[1].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
-	}
-
-	for (int i = 0, x = 20; i < 6; i++, x += 5)
-	{
-		float y = sqrt(900 - (x - 50) * (x - 50));
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
-		y = -sqrt(900 - (x - 50) * (x - 50));
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
-	}
-
-	for (int i = 0, x = 0; i < 6; i++, x += 4)
-	{
-		float y = sqrt(100 - (x - 10) * (x - 10)) + 35;
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
-		y = -sqrt(100 - (x - 10) * (x - 10)) + 35;
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
-	}
-
-	for (int i = 0, x = -45; i < 3; i++, x += 20) {
-		glPushMatrix();
-		glTranslatef(x, 0, 5);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = 5;
-		glPushMatrix();
-		glTranslatef(x, 0, -5);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = -5;
-	}
-
-	for (int i = 0, x = 0; i < 6; i++, x += 4)
-	{
-		float y = sqrt(100 - (x - 10) * (x - 10)) - 35;
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
-		y = -sqrt(100 - (x - 10) * (x - 10)) - 35;
-		glPushMatrix();
-		glTranslatef(x, 0, y);
-		glScalef(2, 3, 2);
-		model_tree[2].Draw();
-		glPopMatrix();
-		treePositions[counter][0] = x;
-		treePositions[counter++][1] = y;
+		gemPositions[cntGems][1] = y;
+		gemPositions[cntGems++][2] = type;
 	}
 }
 void drawPonds() {
@@ -847,13 +748,18 @@ void drawPlayer() {
 	}
 	if (keyTaken) {
 		glPushMatrix();
-		glTranslatef(-0.45, 0.25, 0);
+		glTranslatef(-0.55, 0.4, 0);
 		glRotatef(90, 1, 0, 0);
 		glRotatef(90, 0, 1, 0);
-		if (keyID == 0)
-			model_key_taken.Draw();
-		else
-			model_key_taken2.Draw();
+		if (key_taken[0])
+			model_key[0].Draw();
+		if (key_taken[1])
+			model_key[1].Draw();
+		if (key_taken[2])
+			model_key[2].Draw();
+		if (key_taken[3])
+			model_key[3].Draw();
+
 		glPopMatrix();
 	}
 
@@ -861,8 +767,10 @@ void drawPlayer() {
 	glPopMatrix();
 }
 void drawStatues() {
+
+	// green statue
 	glPushMatrix();
-	glTranslatef(30, 0, 7);
+	glTranslatef(-15, 0, 15);
 
 	glPushMatrix();
 	glRotatef(-90, 0, 1, 0);
@@ -870,19 +778,20 @@ void drawStatues() {
 	model_statue.Draw();
 	glPopMatrix();
 
-	if (keyLoaded) {
+	if (key_loaded[0]) {
 		glPushMatrix();
 		glTranslatef(-1.165, 1.3, 0);
 		glRotatef(180, 1, 0, 0);
 		glRotatef(-50, 0, 0, 1);
-		model_key_loaded2.Draw();
+		model_key[0].Draw();
 		glPopMatrix();
 	}
 	glPopMatrix();
 
 
+	// redstatue
 	glPushMatrix();
-	glTranslatef(30, 0, -7);
+	glTranslatef(-15, 0, -15);
 
 	glPushMatrix();
 	glRotatef(-90, 0, 1, 0);
@@ -890,19 +799,61 @@ void drawStatues() {
 	model_statue.Draw();
 	glPopMatrix();
 
-	if (keyLoaded2) {
+	if (key_loaded[1]) {
 		glPushMatrix();
 		glTranslatef(-1.165, 1.3, 0);
 		glRotatef(180, 1, 0, 0);
 		glRotatef(-50, 0, 0, 1);
-		model_key_loaded.Draw();
+		model_key[1].Draw();
 		glPopMatrix();
+	}
+	glPopMatrix();
+
+
+	//blue statue
+	glPushMatrix();
+	glTranslatef(-30, 0, 5);
+
+	glPushMatrix();
+	glRotatef(-90, 0, 1, 0);
+	glScalef(0.5, 1, 0.5);
+	model_statue.Draw();
+	glPopMatrix();
+
+	if (key_loaded[2]) {
+	glPushMatrix();
+	glTranslatef(-1.165, 1.3, 0);
+	glRotatef(180, 1, 0, 0);
+	glRotatef(-50, 0, 0, 1);
+	model_key[2].Draw();
+	glPopMatrix();
+	}
+	glPopMatrix();
+
+
+	// yellow statue
+	glPushMatrix();
+	glTranslatef(-30, 0, -5);
+
+	glPushMatrix();
+	glRotatef(-90, 0, 1, 0);
+	glScalef(0.5, 1, 0.5);
+	model_statue.Draw();
+	glPopMatrix();
+
+	if (key_loaded[3]) {
+	glPushMatrix();
+	glTranslatef(-1.165, 1.3, 0);
+	glRotatef(180, 1, 0, 0);
+	glRotatef(-50, 0, 0, 1);
+	model_key[3].Draw();
+	glPopMatrix();
 	}
 	glPopMatrix();
 }
 void drawGate() {
 	glPushMatrix();
-	glTranslatef(45, 0, 0);
+	glTranslatef(0, 0, 0);
 
 	glPushMatrix();
 	glRotatef(-90, 0, 1, 0);
@@ -1750,9 +1701,8 @@ bool checkCollisionGem() {
 			float distance = sqrt((playerX - gemX) * (playerX - gemX) + (playerY - gemZ) * (playerY - gemZ));
 
 			if (distance < playerBoundingRadius + objectBoundingRadius) {
-				// Collision detected, remove the gem
 				gemExists[i] = false;
-				score[(int)gemPositions[i][2]]++;
+				score[(int) gemPositions[i][2]]++;
 				engine->play2D("Sounds/pickup.wav", false);
 				return true;
 			}
@@ -1766,25 +1716,47 @@ bool checkCollisionGem() {
 //=======================================================================
 
 bool checkCollisionKey(float playerX, float playerY) {
-	if (!firstLevel)return false;
-	float distance = sqrt((playerX + 25) * (playerX + 25) + (playerY + 25) * (playerY + 25));
-	if (distance < playerBoundingRadius + objectBoundingRadius) {
-		if (score[0] == 12) {
-			keyID = 0;
+	if (!firstLevel || keyTaken)return false;
+	float distance = sqrt((playerX - 50) * (playerX - 50) + (playerY - 50) * (playerY - 50));
+	if (distance < 2) {
+		if (score[0] == 22) {
+			key_taken[0] = true;
+			keyTaken = true;
+			return true;
 		}
-		return true;
+		return false;
 	}
-	distance = sqrt((playerX + 25) * (playerX + 25) + (playerY - 25) * (playerY - 25));
-	if (distance < playerBoundingRadius + objectBoundingRadius) {
-		if (score[1] == 12) {
-			keyID = 1;
+	distance = sqrt((playerX + 50) * (playerX + 50) + (playerY - 50) * (playerY - 50));
+	if (distance < 2) {
+		if (score[2] == 22) {
+			key_taken[2] = true;
+			keyTaken = true;
+			return true;
 		}
-		return true;
+		return false;
+	}
+	distance = sqrt((playerX - 50) * (playerX - 50) + (playerY + 50) * (playerY + 50));
+	if (distance < 2) {
+		if (score[1] == 22) {
+			key_taken[1] = true;
+			keyTaken = true;
+			return true;
+		}
+		return false;
+	}
+	distance = sqrt((playerX + 50) * (playerX + 50) + (playerY + 50) * (playerY + 50));
+	if (distance < 2) {
+		if (score[3] == 22) {
+			key_taken[3] = true;
+			keyTaken = true;
+			return true;
+		}
+		return false;
 	}
 	return false; // No collision detected
 }
 void drawDragon() {
-	glPushMatrix();
+	/*glPushMatrix();
 	glTranslated(-50, 15, -70);
 	glRotated(dragonAngle, 0, 1, 0);
 	glTranslated(-100, 0, 0);
@@ -1807,7 +1779,7 @@ void drawDragon() {
 	glTranslated(-100, 0, 0);
 	glScaled(1000, 1000, 1000);
 	model_dragon3[(int)cntDragon].Draw();
-	glPopMatrix();
+	glPopMatrix();*/
 
 	glPushMatrix();
 	glTranslated(followDragonX, 2, followDragonY);
@@ -1868,6 +1840,48 @@ void drawForest(float posX, float posY, float scale) {
 	treePositions[cntTrees++][2] = scale / 3;
 	
 }
+void drawKeys() {
+
+	//green key   && !keyTaken && !keyLoaded2
+	if (score[0] == 22 && !key_taken[0] && !key_loaded[0]) {
+	glPushMatrix();
+	glTranslatef(50, keyPos, 50);
+	glRotatef(keyRotation, 0, 1, 0);
+	glScalef(1.5, 1.5, 1.5);
+	model_key[0].Draw();
+	glPopMatrix();
+	}
+	
+	//red key  && !keyTaken && !keyLoaded
+	if (score[1] == 22 && !key_taken[1] && !key_loaded[1]) {
+	glPushMatrix();
+	glTranslatef(50, keyPos, -50);
+	glRotatef(keyRotation, 0, 1, 0);
+	glScalef(1.5, 1.5, 1.5);
+	model_key[1].Draw();
+	glPopMatrix();
+	}
+
+	//blue key  && !keyTaken && !keyLoaded2
+	if (score[2] == 22 && !key_taken[2] && !key_loaded[2]) {
+	glPushMatrix();
+	glTranslatef(-50, keyPos, 50);
+	glRotatef(keyRotation, 0, 1, 0);
+	glScalef(1.5, 1.5, 1.5);
+	model_key[2].Draw();
+	glPopMatrix();
+	}
+
+	//yellow key  && !keyTaken && !keyLoaded
+	if (score[3] == 22 && !key_taken[3] && !key_loaded[3]) {
+	glPushMatrix();
+	glTranslatef(-50, keyPos, -50);
+	glRotatef(keyRotation, 0, 1, 0);
+	glScalef(1.5, 1.5, 1.5);
+	model_key[3].Draw();
+	glPopMatrix();
+	}
+}
 
 //=======================================================================
 // Function to check collision between the player and statue2
@@ -1875,30 +1889,68 @@ void drawForest(float posX, float posY, float scale) {
 
 bool checkCollisionStatue2(float playerX, float playerY) {
 	if (!firstLevel)return false;
-	float distance = sqrt((playerX - 30) * (playerX - 30) + (playerY - 7) * (playerY - 7));
-	if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
-		if (keyID == 1)
+	float distance = sqrt((playerX + 15) * (playerX + 15) + (playerY - 15) * (playerY - 15));
+	if (distance  < 3) {
+		if (key_taken[0]) {
+			engine->play2D("Sounds/unlock.wav", false);
+			keyTaken = false;
+			key_taken[0] = false;
+			key_loaded[0] = true;
 			return true;
+		}
+		return false;
 	}
-	distance = sqrt((playerX - 30) * (playerX - 30) + (playerY + 7) * (playerY + 7));
-	if (distance - 0.4 < playerBoundingRadius + objectBoundingRadius) {
-		if (keyID == 0)
+	distance = sqrt((playerX + 15) * (playerX + 15) + (playerY + 15) * (playerY + 15));
+	if (distance < 3) {
+		if (key_taken[1]) {
+			engine->play2D("Sounds/unlock.wav", false);
+			keyTaken = false;
+			key_taken[1] = false;
+			key_loaded[1] = true;
 			return true;
+		}
+		return false;
 	}
-	return false; // No collision detected
+	distance = sqrt((playerX + 30) * (playerX + 30) + (playerY - 5) * (playerY - 5));
+	if (distance < 3) {
+		if (key_taken[2]) {
+			engine->play2D("Sounds/unlock.wav", false);
+			keyTaken = false;
+			key_taken[2] = false;
+			key_loaded[2] = true;
+			return true;
+		}
+		return false;
+	}
+	distance = sqrt((playerX + 30) * (playerX + 30) + (playerY + 5) * (playerY + 5));
+	if (distance < 3) {
+		if (key_taken[3]) {
+			engine->play2D("Sounds/unlock.wav", false);
+			keyTaken = false;
+			key_taken[3] = false;
+			key_loaded[3] = true;
+			return true;
+		}
+		return false;
+	}
+	if (key_loaded[0] && key_loaded[1] && key_loaded[2] && key_loaded[3] && !allKeysLoaded) {
+		allKeysLoaded = true;
+		engine->play2D("Sounds/energyflow.wav", false);
+	}
+	return false; 
 }
 
 void myDisplay1()
 {
 	
-	cout << playerX << " " << playerY << '\n';
-
+	//cout << playerX << " " << playerY << '\n';
+	/*GLfloat lightIntensity[] = { 1,1, 0.9, 1.0f };
+	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };*/
 	setupCamera();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
-	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
+	
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
@@ -1906,24 +1958,27 @@ void myDisplay1()
 	cntGems = 0;
 
 	if (firstTime) {
-		engine->play2D("Sounds/story1.mp3", false);
+		//engine->play2D("Sounds/story1.mp3", false);
 		firstTime = false;
-		playerX = 5.0f;
-		playerY = 1.5f;
+		playerX = -42.7548 ;
+		playerY = -1.73641;
 		explorerCameraTP.refresh();
 		explorerCameraFP.resetFP();
 	}
 
 	// Draw Ground
 	RenderGround();
-	if (keyLoaded && keyLoaded2)
+	if (allKeysLoaded)
 		RenderVortex();
 	float spacing = 8.0; // Adjust the spacing between trees
-	drawGems(-50, -50, 15);
-	drawGems(-50, 50, 15);
-	drawGems(50, -50, 15);
-	drawGems(50, 50, 15);
-	//drawTrees();
+	// green side
+	drawGems(50, 50, 15, 0);
+	// red side
+	drawGems(50, -50, 15, 1);
+	// blue side
+	drawGems(-50, 50, 15, 2);
+	// yellow side
+	drawGems(-50, -50, 15, 3);
 	drawForest(-50, -50, 5);
 	drawForest(-50, 50, 5);
 	drawForest(50, -50, 5);
@@ -1934,11 +1989,15 @@ void myDisplay1()
 	drawGate();
 	RenderSea();
 	drawSky(tex, 300);
+	drawKeys();
 
 	handleMovement();
 	checkCollisionGem();
+	checkCollisionKey(playerX, playerY);
+	checkCollisionStatue2(playerX, playerY);
+	
 
-	if (playerX >= 43.5 && playerX <= 46.5 && playerY >= -1 && playerY <= 1 && keyLoaded && keyLoaded2)
+	if (playerX >= -0.5 && playerX <= 0.5 && playerY >= -1.5 && playerY <= 1.5 && allKeysLoaded)
 	{
 		firstLevel = false;
 		firstTime = true;
@@ -1950,29 +2009,6 @@ void myDisplay1()
 		return;
 	}
 
-	if (checkCollisionKey(playerX, playerY) && !keyTaken) {
-		if (!keyLoaded2 && keyID == 0) {
-			engine->play2D("Sounds/item-pick-up.mp3");
-			keyTaken = true;
-		}
-		if (!keyLoaded && keyID == 1) {
-			engine->play2D("Sounds/item-pick-up.mp3");
-			keyTaken = true;
-		}
-	}
-	if (checkCollisionStatue2(playerX, playerY) && keyTaken) {
-		keyTaken = false;
-		engine->play2D("Sounds/unlock.wav", false);
-		if (keyID == 0)
-			keyLoaded2 = true;
-		else
-			keyLoaded = true;
-		if (keyLoaded && keyLoaded2)
-			engine->play2D("Sounds/energyflow.wav", false);
-		keyID = -1;
-	}
-
-
 	if (!isPlayerFalling && (playerX > 100.5 || playerX < -100.5 || playerY > 100.5 || playerY < -100.5)) {
 		isPlayerFalling = true;
 		engine->play2D("Sounds/fall.wav");
@@ -1982,31 +2018,22 @@ void myDisplay1()
 		playerFallingCoord -= fallingAnimSpeed;
 		if (playerFallingCoord < -5) {
 			isPlayerFalling = false;
-			playerX = 5.0f;
-			playerY = 1.5f;
+			playerX = -42.7548;
+			playerY = -1.73641;
 			playerFallingCoord = 0.0f;
 			explorerCameraTP.refresh();
 			explorerCameraFP.resetFP();
 		}
 	}
 
-	if (score[0] == 12 && !keyTaken && !keyLoaded2) {
-		glPushMatrix();
-		glTranslatef(-25, keyPos, -25);
-		glRotatef(keyRotation, 0, 1, 0);
-		//glScalef(0.3, 0.3, 0.3);
-		model_key.Draw();
-		glPopMatrix();
-	}
+	if (playerFallingCoord <= 0 && acceleration <= 0)
+		acceleration = 0;
+	else
+		acceleration -= 0.004;
+	playerFallingCoord += acceleration;
 
-	if (score[1] == 12 && !keyTaken && !keyLoaded) {
-		glPushMatrix();
-		glTranslatef(-25, keyPos, 25);
-		glRotatef(keyRotation, 0, 1, 0);
-		//glScalef(0.3, 0.3, 0.3);
-		model_key2.Draw();
-		glPopMatrix();
-	}
+	jumpDelay -= 0.5;
+	if (jumpDelay < 0)jumpDelay = 0;
 
 	glutSwapBuffers();
 
@@ -2024,7 +2051,7 @@ void myDisplay2()
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
 	if (firstTime) {
-		engine->play2D("Sounds/story2.mp3", false);
+		//engine->play2D("Sounds/story2.mp3", false);
 		constant = 4;
 		firstTime = false;
 		playerX = 50;
@@ -2047,7 +2074,6 @@ void myDisplay2()
 	drawPortal();
 	drawGateLv2();
 	drawDragon();
-	//drawForest();
 
 	handleMovement();
 	if (playerFallingCoord <= 0 && acceleration <= 0)
@@ -2288,7 +2314,7 @@ void myKeyboard(unsigned char button, int x, int y) {
 
 	switch (button) {
 	case ' ':
-		if (acceleration == 0 && jumpDelay <= 0 && !playerIsFalling) {
+		if (acceleration == 0 && jumpDelay <= 0 && (firstLevel && !isPlayerFalling || !firstLevel && !playerIsFalling)) {
 			engine->play2D("Sounds/jumppp22.ogg");
 			acceleration = 0.13;
 			jumpDelay = resetJumpDelay;
@@ -2500,9 +2526,13 @@ void LoadAssets()
 	model_gem[0].Load("Models/gems/gem3.3DS");
 	model_gem[1].Load("Models/gems/gem4.3DS");
 	model_gate_level1.Load("Models/gate/portal.3DS");
-	model_key.Load("Models/key/redKey.3DS");
-	model_key_loaded.Load("Models/key/redKey.3DS");
-	model_key_taken.Load("Models/key/redKey.3DS");
+	model_key[0].Load("Models/key/greenKey.3DS");
+	model_key[1].Load("Models/key/redKey.3DS");
+	model_key[2].Load("Models/key/blueKey.3DS");
+	model_key[3].Load("Models/key/yellowKey.3DS");
+	model_key1.Load("Models/key/redKey.3DS");
+	model_key_loaded1.Load("Models/key/redKey.3DS");
+	model_key_taken1.Load("Models/key/redKey.3DS");
 	model_key2.Load("Models/key/greenKey.3DS");
 	model_key_loaded2.Load("Models/key/greenKey.3DS");
 	model_key_taken2.Load("Models/key/greenKey.3DS");
@@ -2664,6 +2694,7 @@ void main(int argc, char** argv)
 	glutWarpPointer(WIDTH / 2, HEIGHT / 2);
 
 	glutIdleFunc(Anim);
+	glutTimerFunc(0, Timer, 0);
 
 	glutMotionFunc(pressMotion);
 	//glutMouseFunc(myMouse);
