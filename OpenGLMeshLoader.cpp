@@ -23,7 +23,7 @@ void handleMovement();
 bool isPlayerFalling = false;
 float fallingAnimSpeed = 0.1f;
 float playerFallingCoord = 0.0f;
-bool firstLevel = true;
+bool firstLevel = false;
 bool moveLeft, moveRight, moveForward, moveBackward;
 int constant = 4;
 float resetJumpDelay = 40;
@@ -42,6 +42,7 @@ int WIDTH = 1920;
 int HEIGHT = 1080;
 
 int cntStatue;
+float cntDragon = 0;
 float statueAngle[50];
 float statueAngleSpeed[50];
 float statuePos[50][3];
@@ -140,7 +141,7 @@ int mouseY = HEIGHT/2;
 int keyID = -1;
 
 bool isFP = true;
-bool firstTime = true;
+bool firstTime = false;
 float coinPositions[50][3];
 vector<bool> coinExists(50 , true);
 float crystalPositions[3][2];
@@ -149,6 +150,7 @@ int cntCoins = 0;
 bool playerIsFalling = true;
 bool enableFalling = true;
 bool win = false;
+float dragonAngle = 0;
 
 GLuint tex, tex_cave;
 char title[] = "3D Model Loader Sample";
@@ -413,7 +415,10 @@ Model_3DS model_rock[10];
 Model_3DS model_coin[4];
 Model_3DS model_crystal;
 Model_3DS model_portal[4];
-
+Model_3DS model_dragon[31];
+Model_3DS model_dragon2[31];
+Model_3DS model_dragon3[34];
+ 
 
 Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
 	playerX + sin(DEG2RAD(cameraPosX)) * 3, 2.3, playerY - cos(DEG2RAD(cameraPosY)) * 3,
@@ -434,6 +439,9 @@ GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground;
 
 void Anim()
 {
+	cntDragon += 0.3;
+	dragonAngle += 0.3;
+	if (cntDragon > 30) cntDragon = 0;
 	if (keyPos >= 1.3) {
 		keyAdd = -0.01;
 	}
@@ -1774,6 +1782,32 @@ bool checkCollisionKey(float playerX, float playerY) {
 	}
 	return false; // No collision detected
 }
+void drawDragon() {
+	glPushMatrix();
+	glTranslated(-50, 15 , -70);
+	glRotated(dragonAngle, 0, 1, 0);
+	glTranslated(-100, 0, 0);
+	glScaled(10, 10, 10);
+	model_dragon[(int)cntDragon].Draw();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslated(-50, 5, -70);
+	glRotated(dragonAngle, 0, 1, 0);
+	glTranslated(-100, 0, 0);
+	glScaled(10, 10, 10);
+	model_dragon2[(int)cntDragon].Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(-50, 25, -70);
+	glRotated(dragonAngle, 0, 1, 0);
+	glTranslated(-100, 0, 0);
+	glScaled(1000, 1000, 1000);
+	model_dragon3[(int)cntDragon].Draw();
+	glPopMatrix();
+}
 
 //=======================================================================
 // Function to check collision between the player and statue2
@@ -1937,6 +1971,7 @@ void myDisplay2()
 	checkCollisionCrystals(playerX, playerY);
 	drawPortal();
 	drawGateLv2();
+	drawDragon();
 
 	handleMovement();
 	if (playerFallingCoord <= 0 && acceleration <= 0)
@@ -2011,6 +2046,7 @@ void myDisplay2()
 
 void myDisplay(void)
 {
+	
 	if (firstLevel)
 		myDisplay1();
 	else
@@ -2074,6 +2110,7 @@ void handleMovement()
 
 		if (moveForward || moveBackward || moveRight || moveLeft) {
 			cnt++;
+			
 			if (cnt > 20 * constant) cnt = 0;
 		}
 
@@ -2403,7 +2440,102 @@ void LoadAssets()
 	model_portal[2].Load("models/portal/portal3.3DS");
 	model_portal[3].Load("models/portal/portal4.3DS");
 	model_gate_level2.Load("models/gate/gate2.3DS");
-
+	model_dragon[0].Load("models/dragon/dragon1.3DS");
+	model_dragon[1].Load("models/dragon/dragon2.3DS");
+	model_dragon[2].Load("models/dragon/dragon3.3DS");
+	model_dragon[3].Load("models/dragon/dragon4.3DS");
+	model_dragon[4].Load("models/dragon/dragon5.3DS");
+	model_dragon[5].Load("models/dragon/dragon6.3DS");
+	model_dragon[6].Load("models/dragon/dragon7.3DS");
+	model_dragon[7].Load("models/dragon/dragon8.3DS");
+	model_dragon[8].Load("models/dragon/dragon9.3DS");
+	model_dragon[9].Load("models/dragon/dragon10.3DS");
+	model_dragon[10].Load("models/dragon/dragon11.3DS");
+	model_dragon[11].Load("models/dragon/dragon12.3DS");
+	model_dragon[12].Load("models/dragon/dragon13.3DS");
+	model_dragon[13].Load("models/dragon/dragon14.3DS");
+	model_dragon[14].Load("models/dragon/dragon15.3DS");
+	model_dragon[15].Load("models/dragon/dragon16.3DS");
+	model_dragon[16].Load("models/dragon/dragon17.3DS");
+	model_dragon[17].Load("models/dragon/dragon18.3DS");
+	model_dragon[18].Load("models/dragon/dragon19.3DS");
+	model_dragon[19].Load("models/dragon/dragon20.3DS");
+	model_dragon[20].Load("models/dragon/dragon21.3DS");
+	model_dragon[21].Load("models/dragon/dragon22.3DS");
+	model_dragon[22].Load("models/dragon/dragon23.3DS");
+	model_dragon[23].Load("models/dragon/dragon24.3DS");
+	model_dragon[24].Load("models/dragon/dragon25.3DS");
+	model_dragon[25].Load("models/dragon/dragon26.3DS");
+	model_dragon[26].Load("models/dragon/dragon27.3DS");
+	model_dragon[27].Load("models/dragon/dragon28.3DS");
+	model_dragon[28].Load("models/dragon/dragon29.3DS");
+	model_dragon[29].Load("models/dragon/dragon30.3DS");
+	model_dragon[30].Load("models/dragon/dragon31.3DS");
+	model_dragon2[0].Load("models/dragon2/dragon1.3DS");
+	model_dragon2[1].Load("models/dragon2/dragon2.3DS");
+	model_dragon2[2].Load("models/dragon2/dragon3.3DS");
+	model_dragon2[3].Load("models/dragon2/dragon4.3DS");
+	model_dragon2[4].Load("models/dragon2/dragon5.3DS");
+	model_dragon2[5].Load("models/dragon2/dragon6.3DS");
+	model_dragon2[6].Load("models/dragon2/dragon7.3DS");
+	model_dragon2[7].Load("models/dragon2/dragon8.3DS");
+	model_dragon2[8].Load("models/dragon2/dragon9.3DS");
+	model_dragon2[9].Load("models/dragon2/dragon10.3DS");
+	model_dragon2[10].Load("models/dragon2/dragon11.3DS");
+	model_dragon2[11].Load("models/dragon2/dragon12.3DS");
+	model_dragon2[12].Load("models/dragon2/dragon13.3DS");
+	model_dragon2[13].Load("models/dragon2/dragon14.3DS");
+	model_dragon2[14].Load("models/dragon2/dragon15.3DS");
+	model_dragon2[15].Load("models/dragon2/dragon16.3DS");
+	model_dragon2[16].Load("models/dragon2/dragon17.3DS");
+	model_dragon2[17].Load("models/dragon2/dragon18.3DS");
+	model_dragon2[18].Load("models/dragon2/dragon19.3DS");
+	model_dragon2[19].Load("models/dragon2/dragon20.3DS");
+	model_dragon2[20].Load("models/dragon2/dragon21.3DS");
+	model_dragon2[21].Load("models/dragon2/dragon22.3DS");
+	model_dragon2[22].Load("models/dragon2/dragon23.3DS");
+	model_dragon2[23].Load("models/dragon2/dragon24.3DS");
+	model_dragon2[24].Load("models/dragon2/dragon25.3DS");
+	model_dragon2[25].Load("models/dragon2/dragon26.3DS");
+	model_dragon2[26].Load("models/dragon2/dragon27.3DS");
+	model_dragon2[27].Load("models/dragon2/dragon28.3DS");
+	model_dragon2[28].Load("models/dragon2/dragon29.3DS");
+	model_dragon2[29].Load("models/dragon2/dragon30.3DS");
+	model_dragon2[30].Load("models/dragon2/dragon31.3DS");
+	model_dragon3[0].Load("models/dragon3/dragon1.3DS");
+	model_dragon3[1].Load("models/dragon3/dragon2.3DS");
+	model_dragon3[2].Load("models/dragon3/dragon3.3DS");
+	model_dragon3[3].Load("models/dragon3/dragon4.3DS");
+	model_dragon3[4].Load("models/dragon3/dragon5.3DS");
+	model_dragon3[5].Load("models/dragon3/dragon6.3DS");
+	model_dragon3[6].Load("models/dragon3/dragon7.3DS");
+	model_dragon3[7].Load("models/dragon3/dragon8.3DS");
+	model_dragon3[8].Load("models/dragon3/dragon9.3DS");
+	model_dragon3[9].Load("models/dragon3/dragon10.3DS");
+	model_dragon3[10].Load("models/dragon3/dragon11.3DS");
+	model_dragon3[11].Load("models/dragon3/dragon12.3DS");
+	model_dragon3[12].Load("models/dragon3/dragon13.3DS");
+	model_dragon3[13].Load("models/dragon3/dragon14.3DS");
+	model_dragon3[14].Load("models/dragon3/dragon15.3DS");
+	model_dragon3[15].Load("models/dragon3/dragon16.3DS");
+	model_dragon3[16].Load("models/dragon3/dragon17.3DS");
+	model_dragon3[17].Load("models/dragon3/dragon18.3DS");
+	model_dragon3[18].Load("models/dragon3/dragon19.3DS");
+	model_dragon3[19].Load("models/dragon3/dragon20.3DS");
+	model_dragon3[20].Load("models/dragon3/dragon21.3DS");
+	model_dragon3[21].Load("models/dragon3/dragon22.3DS");
+	model_dragon3[22].Load("models/dragon3/dragon23.3DS");
+	model_dragon3[23].Load("models/dragon3/dragon24.3DS");
+	model_dragon3[24].Load("models/dragon3/dragon25.3DS");
+	model_dragon3[25].Load("models/dragon3/dragon26.3DS");
+	model_dragon3[26].Load("models/dragon3/dragon27.3DS");
+	model_dragon3[27].Load("models/dragon3/dragon28.3DS");
+	model_dragon3[28].Load("models/dragon3/dragon29.3DS");
+	model_dragon3[29].Load("models/dragon3/dragon30.3DS");
+	model_dragon3[30].Load("models/dragon3/dragon31.3DS");
+	model_dragon3[31].Load("models/dragon3/dragon32.3DS");
+	model_dragon3[32].Load("models/dragon3/dragon33.3DS");
+	model_dragon3[33].Load("models/dragon3/dragon34.3DS");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
