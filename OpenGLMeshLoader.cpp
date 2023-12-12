@@ -52,6 +52,9 @@ float statueEndPoint[50][3];
 int cntRock;
 float rockPos[100][4];
 bool isDead = false;
+float followDragonX = 0, followDragonY = 0;
+float followDragonAngle = 180;
+float rotateFollowDragonKeyboard = 0;
 
 
 struct Point {
@@ -266,6 +269,7 @@ public:
 		cameraPosX += a;
 		cameraPosY += a;
 		playerAngle += -a;
+		followDragonAngle += -a;
 		refresh();
 	}
 
@@ -1808,6 +1812,13 @@ void drawDragon() {
 	glScaled(1000, 1000, 1000);
 	model_dragon3[(int)cntDragon].Draw();
 	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(followDragonX, 2, followDragonY);
+	glRotated(followDragonAngle + rotateFollowDragonKeyboard, 0, 1, 0);
+	glScaled(0.4, 0.4, 0.4);
+	model_dragon[(int)cntDragon].Draw();
+	glPopMatrix();
 }
 void drawForest() {
 	glPushMatrix();
@@ -1976,6 +1987,9 @@ void myDisplay2()
 		explorerCameraFP.resetFP();
 	}
 
+	followDragonX = playerX - sin(DEG2RAD(cameraPosX - 90));
+	followDragonY = playerY + cos(DEG2RAD(cameraPosY - 90));
+
 	RenderCaveGround();
 	drawSky(tex_cave, 300);
 	drawPlayer();
@@ -2131,30 +2145,39 @@ void handleMovement()
 		}
 
 		if (moveForward && moveLeft) {
+			rotateFollowDragonKeyboard = 45;
 			rotatePlayerKeyboard = 45;
 		}
 		else if (moveForward && moveRight) {
+			rotateFollowDragonKeyboard = -45;
 			rotatePlayerKeyboard = -45;
 		}
 		else if (moveForward) {
+			rotateFollowDragonKeyboard = 0;
 			rotatePlayerKeyboard = 0;
 		}
 		else if (moveBackward && moveLeft) {
+			rotateFollowDragonKeyboard = 135;
 			rotatePlayerKeyboard = 135;
 		}
 		else if (moveBackward && moveRight) {
+			rotateFollowDragonKeyboard = -135;
 			rotatePlayerKeyboard = -135;
 		}
 		else if (moveBackward) {
+			rotateFollowDragonKeyboard = 180;
 			rotatePlayerKeyboard = 180;
 		}
 		else if (moveLeft) {
+			rotateFollowDragonKeyboard = 90;
 			rotatePlayerKeyboard = 90;
 		}
 		else if (moveRight) {
+			rotateFollowDragonKeyboard = -90;
 			rotatePlayerKeyboard = -90;
 		}
 		else {
+			rotateFollowDragonKeyboard = 0;
 			rotatePlayerKeyboard = 0;
 		}
 
