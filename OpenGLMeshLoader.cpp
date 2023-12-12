@@ -1829,15 +1829,16 @@ void drawDragon() {
 void drawForest() {
 	glPushMatrix();
 	glTranslated(0, -3, 0);
-	glScaled(5, 5, 5);
+	glScaled(4, 4, 4);
 	model_forest.Draw();
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslated(20, -3, 20);
-	glScaled(10, 10, 10);
+	glTranslated(20, -3, 30);
+	glScaled(2, 2, 2);
 	model_forest.Draw();
 	glPopMatrix();
+
 }
 
 //=======================================================================
@@ -1960,8 +1961,8 @@ void myDisplay1()
 
 	float spacing = 8.0; // Adjust the spacing between trees
 	drawGems();
-	drawTrees();
-	//drawForest();
+	//drawTrees();
+	drawForest();
 	drawPonds();
 	drawPlayer();
 	drawStatues();
