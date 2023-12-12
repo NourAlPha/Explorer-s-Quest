@@ -23,7 +23,7 @@ void handleMovement();
 bool isPlayerFalling = false;
 float fallingAnimSpeed = 0.1f;
 float playerFallingCoord = 0.0f;
-bool firstLevel = false;
+bool firstLevel = true;
 bool moveLeft, moveRight, moveForward, moveBackward;
 int constant = 4;
 float resetJumpDelay = 40;
@@ -141,7 +141,7 @@ int mouseY = HEIGHT/2;
 int keyID = -1;
 
 bool isFP = true;
-bool firstTime = false;
+bool firstTime = true;
 float coinPositions[50][3];
 vector<bool> coinExists(50 , true);
 float crystalPositions[3][2];
@@ -418,6 +418,7 @@ Model_3DS model_portal[4];
 Model_3DS model_dragon[31];
 Model_3DS model_dragon2[31];
 Model_3DS model_dragon3[34];
+Model_3DS model_forest;
  
 
 Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
@@ -1808,6 +1809,19 @@ void drawDragon() {
 	model_dragon3[(int)cntDragon].Draw();
 	glPopMatrix();
 }
+void drawForest() {
+	glPushMatrix();
+	glTranslated(0, -3, 0);
+	glScaled(5, 5, 5);
+	model_forest.Draw();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(20, -3, 20);
+	glScaled(10, 10, 10);
+	model_forest.Draw();
+	glPopMatrix();
+}
 
 //=======================================================================
 // Function to check collision between the player and statue2
@@ -1930,6 +1944,7 @@ void myDisplay1()
 	float spacing = 8.0; // Adjust the spacing between trees
 	drawGems();
 	drawTrees();
+	//drawForest();
 	drawPonds();
 	drawPlayer();
 	drawStatues();
@@ -1972,6 +1987,7 @@ void myDisplay2()
 	drawPortal();
 	drawGateLv2();
 	drawDragon();
+	//drawForest();
 
 	handleMovement();
 	if (playerFallingCoord <= 0 && acceleration <= 0)
@@ -2536,6 +2552,7 @@ void LoadAssets()
 	model_dragon3[31].Load("models/dragon3/dragon32.3DS");
 	model_dragon3[32].Load("models/dragon3/dragon33.3DS");
 	model_dragon3[33].Load("models/dragon3/dragon34.3DS");
+	model_forest.Load("models/forest/forest3.3DS");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
