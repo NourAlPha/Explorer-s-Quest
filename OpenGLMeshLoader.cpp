@@ -23,7 +23,7 @@ void handleMovement();
 bool win = false;
 bool startMenu = true;
 bool isPlayerFalling = false;
-float fallingAnimSpeed = 0.1f;
+float fallingAnimSpeed = 0.03f;
 float playerFallingCoord = 0.0f;
 bool firstLevel = true;
 bool moveLeft, moveRight, moveForward, moveBackward;
