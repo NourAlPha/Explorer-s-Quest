@@ -458,7 +458,7 @@ int dir[] = { 0, 90, 180, 270 };
 int currentDir = 0;
 
 // Textures
-GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground, tex_wallpaper_exit, tex_wallpaper_level2, tex_wallpaper_start , tex_wallpaper_win , tex_wallpaper_lose;
+GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground, tex_wallpaper_exit, tex_wallpaper_level2, tex_wallpaper_start, tex_wallpaper_win, tex_wallpaper_lose, tex_score;
 int wallpaper = 0;
 bool playSound = false, soundPlayed = false;
 
@@ -501,13 +501,10 @@ void Anim(){
 void Timer(int value) {
 
 	timer++;
-	/*if (timer % 5 == 0) {
-		lightFlicker = 0.4;
-		lightIntensity[0] = 0;
-		lightIntensity[1] = 0;
-		lightIntensity[2] = 0;
-	}*/
 	
+	if (timer % 20 == 0) {
+		engine->play2D("Sounds/dragon.mp3");
+	}
 
 	glutPostRedisplay();
 	glutTimerFunc(1000, Timer, 0);
@@ -710,6 +707,18 @@ void setupCamera()
 		explorerCameraTP.refresh();
 		explorerCameraTP.look();
 	}
+}
+
+void setupCamera2()
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(60, (WIDTH + 0.0) / HEIGHT, 0.001, 1000);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	explorerCameraTP.reset();
+	explorerCameraTP.look();
 }
 
 // Function to generate a random float between min and max
@@ -1785,7 +1794,8 @@ bool checkCollisionKey(float playerX, float playerY) {
 	return false; // No collision detected
 }
 void drawDragon() {
-	/*glPushMatrix();
+	
+	glPushMatrix();
 	glTranslated(-50, 15, -70);
 	glRotated(dragonAngle, 0, 1, 0);
 	glTranslated(-100, 0, 0);
@@ -1794,21 +1804,21 @@ void drawDragon() {
 	glPopMatrix();
 
 
-	glPushMatrix();
+	/*glPushMatrix();
 	glTranslated(-50, 5, -70);
 	glRotated(dragonAngle, 0, 1, 0);
 	glTranslated(-100, 0, 0);
 	glScaled(10, 10, 10);
 	model_dragon2[(int)cntDragon].Draw();
-	glPopMatrix();
+	glPopMatrix();*/
 
 	glPushMatrix();
-	glTranslated(-50, 25, -70);
+	glTranslated(0, 40, -70);
 	glRotated(dragonAngle, 0, 1, 0);
 	glTranslated(-100, 0, 0);
 	glScaled(1000, 1000, 1000);
 	model_dragon3[(int)cntDragon].Draw();
-	glPopMatrix();*/
+	glPopMatrix();
 
 	glPushMatrix();
 	glTranslated(followDragonX, 2, followDragonY);
@@ -2034,8 +2044,36 @@ void drawWallpaperWin() {
 
 	glPopMatrix();
 }
+void drawScore() {
+	glPushMatrix();
+	glTranslated(playerX - sin(DEG2RAD(cameraPosX + 180)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY + 180)) * 3);
+	
+	// playerX - sin(DEG2RAD(cameraPosX)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY)) * 3
+	float PORTAL_WIDTH = 1.743, PORTAL_HEIGHT = 1;
+
+	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
+	glBindTexture(GL_TEXTURE_2D, tex_score.texture[0]);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-PORTAL_WIDTH / 2, -PORTAL_HEIGHT / 2, 0);
+	glTexCoord2f(1.0, 0.0); glVertex3f(PORTAL_WIDTH / 2, -PORTAL_HEIGHT / 2, 0);
+	glTexCoord2f(1.0, 1.0); glVertex3f(PORTAL_WIDTH / 2, PORTAL_HEIGHT / 2, 0);
+	glTexCoord2f(0.0, 1.0); glVertex3f(-PORTAL_WIDTH / 2, PORTAL_HEIGHT / 2, 0);
+	glEnd();
+	/*glEnable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);*/
+	glEnable(GL_LIGHTING);
+
+	glPopMatrix();
+}
+
+
 
 void myDisplay_startMenu() {
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
@@ -2045,8 +2083,7 @@ void myDisplay_startMenu() {
 	glutSwapBuffers();
 }
 void myDisplay_win() {
-
-	setupCamera();
+	setupCamera2();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
@@ -2103,6 +2140,7 @@ void myDisplay1()
 	RenderSea();
 	drawSky(tex, 300);
 	drawKeys();
+	drawScore();
 
 	handleMovement();
 	checkCollisionGem();
@@ -2149,7 +2187,6 @@ void myDisplay1()
 }
 void myDisplay2()
 {
-
 	setupCamera();
 	curRock += 0.03;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -2206,9 +2243,6 @@ void myDisplay2()
 	if (!crystalExists[0] && !crystalExists[1] && playerX >= -70.5 && playerX <= -69 && playerY >= -34.5 && playerY <= -29)
 	{
 		win = true;
-		playerX = 0;
-		playerY = 0;
-		explorerCameraTP.reset();
 	}
 
 	if (sailingRock) {
@@ -2804,6 +2838,7 @@ void LoadAssets()
 	tex_wallpaper_exit.Load("Textures/wallpaper_exit.bmp");
 	tex_wallpaper_win.Load("Textures/wallpaper_win.bmp");
 	tex_wallpaper_lose.Load("Textures/wallpaper_lose.bmp");
+	tex_score.Load("Textures/score.bmp");
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 	loadBMP(&tex_cave, "Textures/hell-sky.bmp", true);
 }
