@@ -168,7 +168,7 @@ bool enableFalling = true;
 
 float dragonAngle = 0;
 
-GLuint tex, tex_cave;
+GLuint tex, tex_cave, tex2;
 char title[] = "3D Model Loader Sample";
 
 // 3D Projection Options
@@ -463,7 +463,9 @@ GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground, tex_wallpaper_exit, 
 int wallpaper = 0;
 bool playSound = false, soundPlayed = false;
 
-GLfloat lightPosX = 50.0, lightPosY = -50.0, lightAddX = -0.1, lightAddY = 0.1;
+GLfloat lightPosX = 50.0, lightPosY = -50.0, lightAddX = -0.1, lightAddY = 0.1, lightAdd = -0.0003;
+GLfloat l0Ambient[] = { 1.0f, 1.0f, 1.0f,	1.0f };
+float dayMode = 1;
 
 //=======================================================================
 // Animation Function
@@ -507,19 +509,58 @@ void Anim(){
 	coinPos += coinAdd;
 	coinRotation += 1;
 	
-	/*lightFlicker += 0.1;
-	if (lightFlicker >= 1) {
-		lightIntensity[0] = 0.7;
-		lightIntensity[1] = 0.7;
-		lightIntensity[2] = 0.7;
-	}*/
+	if (!firstLevel) {
+		lightFlicker += 0.1;
+		if (lightFlicker >= 1) {
+			l0Ambient[0] = 0.6;
+			l0Ambient[1] = 0.6;
+			l0Ambient[2] = 0.6;
+		}
+		if (lightFlicker >= 2) {
+			l0Ambient[0] = 0;
+			l0Ambient[1] = 0;
+			l0Ambient[2] = 0;
+		}
+		if (lightFlicker >= 3) {
+			l0Ambient[0] = 0.6;
+			l0Ambient[1] = 0.6;
+			l0Ambient[2] = 0.6;
+		}
+	}
+	if (firstLevel) {
+		if (dayMode > 1.0) {
+			lightAdd *= -1;
+		}
+		if (dayMode < -0.5) {
+			lightAdd *= -1;
+		}
+		dayMode += lightAdd;
+		if (dayMode >= -0.01) {
+			l0Ambient[0] += lightAdd;
+			l0Ambient[1] += lightAdd;
+			l0Ambient[2] += lightAdd;
 
+			l0Ambient[0] = max(l0Ambient[0], 0);
+			l0Ambient[0] = min(l0Ambient[0], 1);
+			l0Ambient[1] = max(l0Ambient[1], 0);
+			l0Ambient[1] = min(l0Ambient[1], 1);
+			l0Ambient[2] = max(l0Ambient[2], 0);
+			l0Ambient[2] = min(l0Ambient[2], 1);
+		}
+	}
+	cout << l0Ambient[0] << " light " << dayMode << '\n';
 	glutPostRedisplay();
 }
 
 void Timer(int value) {
 
 	timer++;
+	if (timer % 5 == 0 && !firstLevel) {
+		lightFlicker = 0;
+		l0Ambient[0] = 0;
+		l0Ambient[1] = 0;
+		l0Ambient[2] = 0;
+	}
 	
 	if (timer % 35 == 0 && !firstLevel) {
 		engine->play2D("Sounds/dragon.mp3");
@@ -560,22 +601,54 @@ void InitLightSource()
 }
 
 void setupLights() {
-
-
-	GLfloat lmodel_ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	//GLfloat lmodel_ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
 	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
 
-	GLfloat l0Diffuse[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-	GLfloat l0Spec[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-	GLfloat l0Ambient[] = { 0.6f, 0.6f, 0.6f,	1.0f };
-	GLfloat l0Position[] = {lightPosX, 5.0f, lightPosY, true };
-	GLfloat l0Direction[] = { 0.0, 1.0, 0.0 };
-	//glLightfv(GL_LIGHT0, GL_DIFFUSE, l0Diffuse);
-	//glLightfv(GL_LIGHT0, GL_AMBIENT, l0Ambient);
-	glLightfv(GL_LIGHT0, GL_POSITION, l0Position);
-	//glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90.0);
-	//glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 90.0);
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, l0Direction);
+	if (!firstLevel) {
+		GLfloat lmodel_ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+		//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+
+		GLfloat l0Diffuse[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+		GLfloat l0Spec[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+		//GLfloat l0Ambient[] = { 0.6f, 0.6f, 0.6f,	1.0f };
+		GLfloat l0Position[] = { lightPosX, 5.0f, lightPosY, true };
+		GLfloat l0Direction[] = { 0.0, 1.0, 0.0 };
+		//glLightfv(GL_LIGHT0, GL_DIFFUSE, l0Diffuse);
+		glLightfv(GL_LIGHT0, GL_AMBIENT, l0Ambient);
+		glLightfv(GL_LIGHT0, GL_POSITION, l0Position);
+		//glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90.0);
+		//glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 90.0);
+		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, l0Direction);
+
+
+		GLfloat l0Diffuse2[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+		GLfloat l0Spec2[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+		GLfloat l0Ambient2[] = { 0.6f, 0.6f, 0.6f,	1.0f };
+		GLfloat l0Position2[] = { 100, 5.0f, 50, true };
+		GLfloat l0Direction2[] = { 0.0, 1.0, 0.0 };
+		//glLightfv(GL_LIGHT0, GL_DIFFUSE, l0Diffuse);
+		glLightfv(GL_LIGHT1, GL_AMBIENT, l0Ambient2);
+		glLightfv(GL_LIGHT1, GL_POSITION, l0Position2);
+		//glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90.0);
+		//glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 90.0);
+		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, l0Direction2);
+	}
+	else {
+		GLfloat lmodel_ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+		//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+
+		GLfloat l0Diffuse[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+		GLfloat l0Spec[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+		//GLfloat l0Ambient[] = { 0.6f, 0.6f, 0.6f,	1.0f };
+		GLfloat l0Position[] = { lightPosX, 5.0f, lightPosY, true };
+		GLfloat l0Direction[] = { 0.0, 1.0, 0.0 };
+		//glLightfv(GL_LIGHT0, GL_DIFFUSE, l0Diffuse);
+		glLightfv(GL_LIGHT0, GL_AMBIENT, l0Ambient);
+		glLightfv(GL_LIGHT0, GL_POSITION, l0Position);
+		//glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90.0);
+		//glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 90.0);
+		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, l0Direction);
+	}
 }
 
 //=======================================================================
@@ -1967,6 +2040,19 @@ void drawKeys() {
 // Function to check collision between the player and statue2
 //=======================================================================
 
+void print(double x, double y, double z, char* string)
+{
+	glPushMatrix();
+	int len, i;
+	glRasterPos3d(x, y, z);
+	len = (int)strlen(string);
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+	}
+	glPopMatrix();
+}
+
 bool checkCollisionStatue2(float playerX, float playerY) {
 	if (!firstLevel)return false;
 	float distance = sqrt((playerX + 15) * (playerX + 15) + (playerY - 15) * (playerY - 15));
@@ -2067,6 +2153,15 @@ void drawWallpaperWin() {
 
 	float PORTAL_WIDTH = 16.0 , PORTAL_HEIGHT = 9.0;
 
+	string printedWord = to_string(playerScore);
+	char timerArr[100];
+	glPushMatrix();
+
+	strcpy(timerArr, printedWord.c_str());
+	print(1.7,-0.73, 0.01, timerArr);
+	glPopMatrix();
+	
+
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
@@ -2086,18 +2181,7 @@ void drawWallpaperWin() {
 	glPopMatrix();
 }
 
-void print(double x, double y, double z, char* string)
-{
-	glPushMatrix();
-	int len, i;
-	glRasterPos3d(x, y, z);
-	len = (int)strlen(string);
-	for (i = 0; i < len; i++)
-	{
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
-	}
-	glPopMatrix();
-}
+
 
 void drawScore() {
 	glPushMatrix();
@@ -2171,16 +2255,10 @@ void myDisplay_win() {
 void myDisplay1()
 {
 	setupLights();
-	cout << playerX << " " << playerY << '\n';
-	GLfloat lightIntensity[] = { 0.5,0.5, 0.5, 1.0f };
-	GLfloat lightPosition[] = { lightPosX, 0, 0.0f, 0.0f };
+	//cout << playerX << " " << playerY << '\n';
 	setupCamera();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	
-	//glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-	//glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
 	cntTrees = 0;
 	cntGems = 0;
@@ -2209,12 +2287,17 @@ void myDisplay1()
 	drawForest(-50, 50, 5);
 	drawForest(50, -50, 5);
 	drawForest(50, 50, 5);
-	drawPonds();
+	//drawPonds();
 	drawPlayer();
 	drawStatues();
 	drawGate();
 	RenderSea();
-	drawSky(tex, 300);
+	if (l0Ambient[0] > 0) {
+		drawSky(tex, 300);
+	}
+	else {
+		drawSky(tex2, 300);
+	}
 	drawKeys();
 	if(isScoreScreenOn)
 		drawScore();
@@ -2228,6 +2311,9 @@ void myDisplay1()
 	if (playerX >= -0.5 && playerX <= 0.5 && playerY >= -1.5 && playerY <= 1.5 && allKeysLoaded)
 	{
 		firstLevel = false;
+		l0Ambient[0] = 0.6;
+		l0Ambient[1] = 0.6;
+		l0Ambient[2] = 0.6;
 		firstTime = true;
 		playerX = 5.0f;
 		playerY = 1.5f;
@@ -2267,11 +2353,11 @@ void myDisplay2()
 	setupCamera();
 	curRock += 0.03;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
+	setupLights();
+	/*GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);*/
 
 	if (firstTime) {
 		//engine->play2D("Sounds/story2.mp3", false);
@@ -2517,6 +2603,9 @@ void handleEnter() {
 		playSound = true;
 	}
 	if (wallpaper == 1) {
+		l0Ambient[0] = 0.6;
+		l0Ambient[1] = 0.6;
+		l0Ambient[2] = 0.6;
 		firstLevel = false;
 	}
 	else if(wallpaper == 2){
@@ -2917,6 +3006,7 @@ void LoadAssets()
 	tex_wallpaper_lose.Load("Textures/wallpaper_lose.bmp");
 	tex_score.Load("Textures/score.bmp");
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
+	loadBMP(&tex2, "Textures/nightSky.bmp", true);
 	loadBMP(&tex_cave, "Textures/hell-sky.bmp", true);
 }
 
@@ -2968,6 +3058,7 @@ void main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_COLOR_MATERIAL);
 
