@@ -463,7 +463,7 @@ GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground, tex_wallpaper_exit, 
 int wallpaper = 0;
 bool playSound = false, soundPlayed = false;
 
-GLfloat lightPosX = 50.0, lightPosY = -50.0, lightAddX = -0.1, lightAddY = 0.1, lightAdd = -0.0003;
+GLfloat lightPosX = 50.0, lightPosY = -50.0, lightAddX = -0.1, lightAddY = 0.1, lightAdd = -0.0001;
 GLfloat l0Ambient[] = { 1.0f, 1.0f, 1.0f,	1.0f };
 float dayMode = 1;
 
@@ -548,7 +548,7 @@ void Anim(){
 			l0Ambient[2] = min(l0Ambient[2], 1);
 		}
 	}
-	cout << l0Ambient[0] << " light " << dayMode << '\n';
+	//cout << l0Ambient[0] << " light " << dayMode << '\n';
 	glutPostRedisplay();
 }
 
