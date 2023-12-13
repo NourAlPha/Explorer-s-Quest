@@ -1,6 +1,11 @@
 ﻿  OpenGLMeshLoader.cpp
-C:\Users\Mohamed Ahmed\Documents\GitHub\Explorer-s-Quest\TextureBuilder.h(27,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\Mohamed Ahmed\Documents\GitHub\Explorer-s-Quest\TextureBuilder.h(28,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\Mohamed Ahmed\Documents\GitHub\Explorer-s-Quest\OpenGLMeshLoader.cpp(97,20): warning C4018: '<': signed/unsigned mismatch
+D:\GUC\DMET 502\Explorer-s-Quest\TextureBuilder.h(27,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+  (compiling source file 'OpenGLMeshLoader.cpp')
+  
+D:\GUC\DMET 502\Explorer-s-Quest\TextureBuilder.h(28,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+  (compiling source file 'OpenGLMeshLoader.cpp')
+  
+D:\GUC\DMET 502\Explorer-s-Quest\OpenGLMeshLoader.cpp(100,20): warning C4018: '<': signed/unsigned mismatch
+D:\GUC\DMET 502\Explorer-s-Quest\OpenGLMeshLoader.cpp(2122,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 GLTexture.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
-  OpenGLMeshLoader.vcxproj -> C:\Users\Mohamed Ahmed\Documents\GitHub\Explorer-s-Quest\Debug\OpenGLMeshLoader19.exe
+  OpenGLMeshLoader.vcxproj -> D:\GUC\DMET 502\Explorer-s-Quest\Debug\OpenGLMeshLoader19.exe

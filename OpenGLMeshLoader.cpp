@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <irrKlang.h>
+#include <string>
 
 using namespace irrklang;
 
@@ -22,7 +23,9 @@ void handleMovement();
 
 bool win = false;
 bool startMenu = true;
+bool isScoreScreenOn = false;
 bool isPlayerFalling = false;
+int playerScore = 0;
 float fallingAnimSpeed = 0.03f;
 float playerFallingCoord = 0.0f;
 bool firstLevel = true;
@@ -1653,6 +1656,7 @@ bool checkCollisionCoins(float playerX, float playerY) {
 
 
 			if (distance < playerBoundingRadius + objectBoundingRadius) {
+				playerScore += 20;
 				// Collision detected, remove the gem
 				coinExists[i] = false;
 				//score[(int)gemPositions[i][2]]++;
@@ -1675,6 +1679,7 @@ bool checkCollisionCrystals(float playerX, float playerY) {
 			float crystalZ = crystalPositions[i][1];
 			float distance = sqrt((playerX - crystalX) * (playerX - crystalX) + (playerY - crystalZ) * (playerY - crystalZ));
 			if (distance < playerBoundingRadius + objectBoundingRadius) {
+				playerScore += 50;
 				crystalExists[i] = false;
 				engine->play2D("Sounds/item-pick-up.mp3", false);
 				engine->play2D("Sounds/energyflow.wav", false);
@@ -1770,6 +1775,7 @@ bool checkCollisionGem() {
 			float distance = sqrt((playerX - gemX) * (playerX - gemX) + (playerY - gemZ) * (playerY - gemZ));
 
 			if (distance < playerBoundingRadius + objectBoundingRadius) {
+				playerScore += 10;
 				gemExists[i] = false;
 				score[(int) gemPositions[i][2]]++;
 				engine->play2D("Sounds/pickup.wav", false);
@@ -2079,12 +2085,42 @@ void drawWallpaperWin() {
 
 	glPopMatrix();
 }
+
+void print(double x, double y, double z, char* string)
+{
+	glPushMatrix();
+	//purple color
+	glScaled(10, 10, 10);
+	int len, i;
+
+	//set the position of the text in the window using the x and y coordinates
+	glRasterPos3d(x, y, z);
+
+	//get the length of the string to display
+	len = (int)strlen(string);
+
+	//loop to display character by character
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+	}
+	glPopMatrix();
+}
+
 void drawScore() {
 	glPushMatrix();
-	glTranslated(playerX - sin(DEG2RAD(cameraPosX + 180)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY + 180)) * 3);
-	
-	// playerX - sin(DEG2RAD(cameraPosX)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY)) * 3
+	if(isFP)
+		glTranslated(playerX - sin(DEG2RAD(cameraPosX + 180)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY + 180)) * 3);
+	else
+		glTranslated(playerX - sin(DEG2RAD(cameraPosX)), 2, playerY + cos(DEG2RAD(cameraPosY)));
+	glRotated(-cameraPosX, 0, 1, 0);
 	float PORTAL_WIDTH = 1.743, PORTAL_HEIGHT = 1;
+
+
+	string printedWord = to_string(playerScore);
+	char timerArr[100];
+	strcpy(timerArr, printedWord.c_str());
+	print(0, 0, 0.5, timerArr);
 
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
@@ -2184,6 +2220,8 @@ void myDisplay1()
 	RenderSea();
 	drawSky(tex, 300);
 	drawKeys();
+	if(isScoreScreenOn)
+		drawScore();
 
 	handleMovement();
 	checkCollisionGem();
@@ -2261,6 +2299,8 @@ void myDisplay2()
 	drawPortal();
 	drawGateLv2();
 	drawDragon();
+	if (isScoreScreenOn)
+		drawScore();
 
 	handleMovement();
 	if (playerFallingCoord <= 0 && acceleration <= 0)
@@ -2529,6 +2569,9 @@ void myKeyboard(unsigned char button, int x, int y) {
 		case 'a':
 			moveLeft = true;
 			break;
+		case 'z':
+			isScoreScreenOn = true;
+			break;
 		case 'x':
 			enableFalling = !enableFalling;
 			break;
@@ -2580,6 +2623,9 @@ void myKeyboardUp(unsigned char button, int x, int y) {
 		break;
 	case 'a':
 		moveLeft = false;
+		break;
+	case 'z':
+		isScoreScreenOn = false;
 		break;
 	default:
 		break;
