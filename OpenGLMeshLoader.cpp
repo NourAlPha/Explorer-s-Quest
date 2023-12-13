@@ -20,10 +20,12 @@ float DEG2RAD(float x) {
 
 void handleMovement();
 
+bool win = false;
+bool startMenu = true;
 bool isPlayerFalling = false;
 float fallingAnimSpeed = 0.1f;
 float playerFallingCoord = 0.0f;
-bool firstLevel = false;
+bool firstLevel = true;
 bool moveLeft, moveRight, moveForward, moveBackward;
 int constant = 4;
 float resetJumpDelay = 40;
@@ -159,7 +161,7 @@ vector<bool> crystalExists(3, true);
 int cntCoins = 0;
 bool playerIsFalling = true;
 bool enableFalling = true;
-bool win = false;
+
 float dragonAngle = 0;
 
 GLuint tex, tex_cave;
@@ -292,6 +294,12 @@ public:
 	void updateYCenterFP(float a)
 	{
 		center.y += a;
+	}
+
+	void reset() {
+				eye = Vector3f(20,5 , 20);
+		center = Vector3f(0, 0, 0);
+		up = Vector3f(0, 1, 0);
 	}
 
 	void refresh()
@@ -449,7 +457,9 @@ int dir[] = { 0, 90, 180, 270 };
 int currentDir = 0;
 
 // Textures
-GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground;
+GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground, tex_wallpaper_exit, tex_wallpaper_level2, tex_wallpaper_start , tex_wallpaper_win , tex_wallpaper_lose;
+int wallpaper = 0;
+bool playSound = false, soundPlayed = false;
 
 //=======================================================================
 // Animation Function
@@ -476,24 +486,26 @@ void Anim(){
 	}
 	coinPos += coinAdd;
 	coinRotation += 1;
-	lightFlicker += 0.1;
+	
+	/*lightFlicker += 0.1;
 	if (lightFlicker >= 1) {
 		lightIntensity[0] = 0.7;
 		lightIntensity[1] = 0.7;
 		lightIntensity[2] = 0.7;
-	}
+	}*/
+
 	glutPostRedisplay();
 }
 
 void Timer(int value) {
 
 	timer++;
-	if (timer % 5 == 0) {
+	/*if (timer % 5 == 0) {
 		lightFlicker = 0.4;
 		lightIntensity[0] = 0;
 		lightIntensity[1] = 0;
 		lightIntensity[2] = 0;
-	}
+	}*/
 	
 
 	glutPostRedisplay();
@@ -1620,9 +1632,7 @@ bool checkCollisionCrystals(float playerX, float playerY) {
 			if (distance < playerBoundingRadius + objectBoundingRadius) {
 				crystalExists[i] = false;
 				engine->play2D("Sounds/item-pick-up.mp3", false);
-				if (i == 0) {
-					engine->play2D("Sounds/energyflow.wav", false);
-				}
+				engine->play2D("Sounds/energyflow.wav", false);
 				return true;
 			}
 		}
@@ -1957,7 +1967,93 @@ bool checkCollisionStatue2(float playerX, float playerY) {
 	}
 	return false; 
 }
+void drawWallpaper() {
+	glPushMatrix();
 
+	glTranslatef(0, 0, 0);
+	glRotated(45 ,0, 1, 0);
+	glRotated(-10, 1, 0, 0);
+	glScaled(2.65, 2.65, 2.65);
+
+
+	float PORTAL_WIDTH = 16.0 , PORTAL_HEIGHT = 9.0;
+
+	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
+	if (wallpaper == 0) {
+		glBindTexture(GL_TEXTURE_2D, tex_wallpaper_start.texture[0]);
+	}
+	else if (wallpaper == 1) {
+		glBindTexture(GL_TEXTURE_2D, tex_wallpaper_level2.texture[0]);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_2D, tex_wallpaper_exit.texture[0]);
+	}
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-PORTAL_WIDTH / 2, -PORTAL_HEIGHT / 2,0 );
+	glTexCoord2f(1.0, 0.0); glVertex3f(PORTAL_WIDTH / 2, -PORTAL_HEIGHT / 2, 0);
+	glTexCoord2f(1.0, 1.0); glVertex3f(PORTAL_WIDTH / 2, PORTAL_HEIGHT / 2, 0);
+	glTexCoord2f(0.0, 1.0); glVertex3f(-PORTAL_WIDTH / 2, PORTAL_HEIGHT / 2, 0);
+	glEnd();
+	/*glEnable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);*/
+	glEnable(GL_LIGHTING);
+
+	glPopMatrix();
+}
+void drawWallpaperWin() {
+	glPushMatrix();
+
+	glTranslatef(0, 0, 0);
+	glRotated(45 ,0, 1, 0);
+	glRotated(-10, 1, 0, 0);
+	glScaled(3.7, 3.7, 3.7);
+
+
+	float PORTAL_WIDTH = 16.0 , PORTAL_HEIGHT = 9.0;
+
+	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
+	glBindTexture(GL_TEXTURE_2D, tex_wallpaper_win.texture[0]);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-PORTAL_WIDTH / 2, -PORTAL_HEIGHT / 2,0 );
+	glTexCoord2f(1.0, 0.0); glVertex3f(PORTAL_WIDTH / 2, -PORTAL_HEIGHT / 2, 0);
+	glTexCoord2f(1.0, 1.0); glVertex3f(PORTAL_WIDTH / 2, PORTAL_HEIGHT / 2, 0);
+	glTexCoord2f(0.0, 1.0); glVertex3f(-PORTAL_WIDTH / 2, PORTAL_HEIGHT / 2, 0);
+	glEnd();
+	/*glEnable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);*/
+	glEnable(GL_LIGHTING);
+
+	glPopMatrix();
+}
+
+void myDisplay_startMenu() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+
+	drawWallpaper();
+
+	glutSwapBuffers();
+}
+void myDisplay_win() {
+
+	setupCamera();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+
+	drawWallpaperWin();
+
+	glutSwapBuffers();
+}
 void myDisplay1()
 {
 	
@@ -2121,6 +2217,9 @@ void myDisplay2()
 	if (!crystalExists[0] && !crystalExists[1] && playerX >= -70.5 && playerX <= -69 && playerY >= -34.5 && playerY <= -29)
 	{
 		win = true;
+		playerX = 0;
+		playerY = 0;
+		explorerCameraTP.reset();
 	}
 
 	if (sailingRock) {
@@ -2153,26 +2252,28 @@ void myDisplay2()
 	if (jumpDelay < 0)jumpDelay = 0;
 	handleFallingStatues();
 
-	if (win) {
-		playerX = 5000;
-		playerY = 5000;
-		explorerCameraTP.refresh();
-		explorerCameraFP.resetFP();
-		playerX = 0;
-		playerY = 0;
-	}
-
 	glutSwapBuffers();
 
 }
-
 void myDisplay(void)
 {
+	if (startMenu) {
+		myDisplay_startMenu();
+	}
+	else if (win) {
+		myDisplay_win();
+	}
+	else {
+		if (firstLevel)
+			myDisplay1();
+		else
+			myDisplay2();
+	}
 
-	if (firstLevel)
-		myDisplay1();
-	else
-		myDisplay2();
+	if (!soundPlayed && playSound) {
+		engine->play2D("Sounds/ambient.mp3", true);
+		soundPlayed = true;
+	}
 }
 
 //=======================================================================
@@ -2322,69 +2423,93 @@ void handleMovement()
 		}
 	}
 }
+void handleEnter() {
+	startMenu = false;
+	if (wallpaper <= 1) {
+		playSound = true;
+	}
+	if (wallpaper == 1) {
+		firstLevel = false;
+	}
+	else if(wallpaper == 2){
+		exit(0);
+	}
+}
 
 void myKeyboard(unsigned char button, int x, int y) {
-	float moveSpeed = 0.1f; // Adjust the speed as needed
-	if (win) {
-		if (button == 27) {
+	if (startMenu) {
+		switch (button) {
+		case 27:
 			exit(0);
+			break;
+		case 13:
+			handleEnter();
+			break;
 		}
-		return;
 	}
-
-	switch (button) {
-	case ' ':
-		if (acceleration == 0 && jumpDelay <= 0 && (firstLevel && !isPlayerFalling || !firstLevel && !playerIsFalling)) {
-			engine->play2D("Sounds/jumppp22.ogg");
-			acceleration = 0.13;
-			jumpDelay = resetJumpDelay;
-			sailingRock = false;
+	else {
+		float moveSpeed = 0.1f; // Adjust the speed as needed
+		if (win) {
+			if (button == 27) {
+				exit(0);
+			}
+			return;
 		}
-		break;
-	case 'w':
-		moveForward = true;
-		break;
-	case 'd':
-		moveRight = true;
-		break;
-	case 's':
-		moveBackward = true;
-		break;
-	case 'a':
-		moveLeft = true;
-		break;
-	case 'x':
-		enableFalling = !enableFalling;
-		break;
-	case '1':
-		isFP = true;
-		break;
-	case '2':
-		isFP = false;
-		break;
-	case 'i':
-		explorerCameraFP.moveY(moveSpeed);
-		break;
-	case 'k':
-		explorerCameraFP.moveY(-moveSpeed);
-		break;
-	case 'j':
-		explorerCameraFP.moveX(moveSpeed);
-		break;
-	case 'l':
-		explorerCameraFP.moveX(-moveSpeed);
-		break;
-	case 'u':
-		explorerCameraFP.moveZ(moveSpeed);
-		break;
-	case 'o':
-		explorerCameraFP.moveZ(-moveSpeed);
-		break;
-	case 27: // Escape key
-		exit(0);
-		break;
-	default:
-		break;
+
+		switch (button) {
+		case ' ':
+			if (acceleration == 0 && jumpDelay <= 0 && (firstLevel && !isPlayerFalling || !firstLevel && !playerIsFalling)) {
+				engine->play2D("Sounds/jumppp22.ogg");
+				acceleration = 0.13;
+				jumpDelay = resetJumpDelay;
+				sailingRock = false;
+			}
+			break;
+		case 'w':
+			moveForward = true;
+			break;
+		case 'd':
+			moveRight = true;
+			break;
+		case 's':
+			moveBackward = true;
+			break;
+		case 'a':
+			moveLeft = true;
+			break;
+		case 'x':
+			enableFalling = !enableFalling;
+			break;
+		case '1':
+			isFP = true;
+			break;
+		case '2':
+			isFP = false;
+			break;
+		case 'i':
+			explorerCameraFP.moveY(moveSpeed);
+			break;
+		case 'k':
+			explorerCameraFP.moveY(-moveSpeed);
+			break;
+		case 'j':
+			explorerCameraFP.moveX(moveSpeed);
+			break;
+		case 'l':
+			explorerCameraFP.moveX(-moveSpeed);
+			break;
+		case 'u':
+			explorerCameraFP.moveZ(moveSpeed);
+			break;
+		case 'o':
+			explorerCameraFP.moveZ(-moveSpeed);
+			break;
+		case 27: // Escape key
+			exit(0);
+			break;
+		default:
+			break;
+		}
 	}
 	glutPostRedisplay();
 }
@@ -2412,25 +2537,36 @@ void myKeyboardUp(unsigned char button, int x, int y) {
 
 void Special(int key, int x, int y)
 {
-	if (win) return;
-	float a = 1.0;
-
-	switch (key)
-	{
-	case GLUT_KEY_UP:
-		explorerCameraFP.rotateX(a);
-		break;
-	case GLUT_KEY_DOWN:
-		explorerCameraFP.rotateX(-a);
-		break;
-	case GLUT_KEY_LEFT:
-		explorerCameraFP.rotateY(a);
-		break;
-	case GLUT_KEY_RIGHT:
-		explorerCameraFP.rotateY(-a);
-		break;
+	if (startMenu) {
+		engine->play2D("Sounds/menu.mp3", false);
+		switch (key)
+		{
+		case GLUT_KEY_DOWN: wallpaper++; break;
+		case GLUT_KEY_UP: wallpaper--; break;
+		}
+		if (wallpaper < 0) wallpaper = 0;
+		if (wallpaper > 2) wallpaper = 2;
 	}
+	else {
+		if (win) return;
+		float a = 1.0;
 
+		switch (key)
+		{
+		case GLUT_KEY_UP:
+			explorerCameraFP.rotateX(a);
+			break;
+		case GLUT_KEY_DOWN:
+			explorerCameraFP.rotateX(-a);
+			break;
+		case GLUT_KEY_LEFT:
+			explorerCameraFP.rotateY(a);
+			break;
+		case GLUT_KEY_RIGHT:
+			explorerCameraFP.rotateY(-a);
+			break;
+		}
+	}
 	glutPostRedisplay();
 }
 
@@ -2680,6 +2816,11 @@ void LoadAssets()
 	tex_sea.Load("Textures/sea.bmp");
 	tex_vortex.Load("Textures/vortex1.bmp");
 	tex_cave_ground.Load("Textures/lava1.bmp");
+	tex_wallpaper_start.Load("Textures/wallpaper_start.bmp");
+	tex_wallpaper_level2.Load("Textures/wallpaper_level2.bmp");
+	tex_wallpaper_exit.Load("Textures/wallpaper_exit.bmp");
+	tex_wallpaper_win.Load("Textures/wallpaper_win.bmp");
+	tex_wallpaper_lose.Load("Textures/wallpaper_lose.bmp");
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 	loadBMP(&tex_cave, "Textures/hell-sky.bmp", true);
 }
@@ -2692,8 +2833,7 @@ void main(int argc, char** argv)
 	engine = createIrrKlangDevice();
 	if (!engine)
 		return;
-	engine->play2D("Sounds/ambient.mp3", true);
-
+	
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
