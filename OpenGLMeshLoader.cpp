@@ -35,6 +35,7 @@ float teleport2PosX = -162.88, teleport2PosY = 99.7334;
 float teleportWidth = 2, teleportHeight = 2;
 bool sailingRock = false;
 float sailingRockX = 78.5, sailingRockY = 108.1;
+float lavaYCoord = -2, lavaAnimSpeed = 0.02, lavaAnimSign = 1;
 
 ISoundEngine* engine;
 
@@ -142,7 +143,7 @@ int cnt = 0;
 float playerBoundingRadius = 0.5f;
 float objectBoundingRadius = 0.5f;
 
-float yLook = 1.5f;
+float yLook = 1.5f, yLookFP = 0;
 
 int score[4];
 
@@ -293,11 +294,11 @@ public:
 
 	void updateYCenterFP(float a)
 	{
-		center.y += a;
+		yLookFP += a;
 	}
 
 	void reset() {
-				eye = Vector3f(20,5 , 20);
+		eye = Vector3f(20,5 , 20);
 		center = Vector3f(0, 0, 0);
 		up = Vector3f(0, 1, 0);
 	}
@@ -310,8 +311,8 @@ public:
 
 	void resetFP()
 	{
-		eye = Vector3f(playerX, 2.3, playerY);
-		center = Vector3f(playerX + sin(DEG2RAD(cameraPosX)) * 3, 2.3, playerY - cos(DEG2RAD(cameraPosY)) * 3);
+		eye = Vector3f(playerX, playerFallingCoord + 2.3, playerY);
+		center = Vector3f(playerX + sin(DEG2RAD(cameraPosX)) * 3, yLookFP + playerFallingCoord + 2.3, playerY - cos(DEG2RAD(cameraPosY)) * 3);
 		up = Vector3f(0, 1, 0);
 	}
 
@@ -446,8 +447,8 @@ Model_3DS model_dragon3[34];
 Model_3DS model_forest;
 
 
-Camera explorerCameraFP = Camera(playerX, 2.3, playerY,
-	playerX + sin(DEG2RAD(cameraPosX)) * 3, 2.3, playerY - cos(DEG2RAD(cameraPosY)) * 3,
+Camera explorerCameraFP = Camera(playerX, playerFallingCoord + 2.3, playerY,
+	playerX + sin(DEG2RAD(cameraPosX)) * 3, yLookFP + playerFallingCoord + 2.3, playerY - cos(DEG2RAD(cameraPosY)) * 3,
 	0, 1, 0);
 Camera explorerCameraTP = Camera(playerX - sin(DEG2RAD(cameraPosX)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY)) * 3,
 	playerX, yLook, playerY, 0, 1, 0);
@@ -702,9 +703,11 @@ void setupCamera()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	if (isFP) {
+		explorerCameraFP.resetFP();
 		explorerCameraFP.look();
 	}
 	else {
+		explorerCameraTP.refresh();
 		explorerCameraTP.look();
 	}
 }
@@ -963,13 +966,13 @@ void RenderCaveGround()
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);	// Set quad normal direction.
 	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-	glVertex3f(-300, -2, -300);
+	glVertex3f(-300, lavaYCoord, -300);
 	glTexCoord2f(5, 0);
-	glVertex3f(300, -2, -300);
+	glVertex3f(300, lavaYCoord, -300);
 	glTexCoord2f(5, 5);
-	glVertex3f(300, -2, 300);
+	glVertex3f(300, lavaYCoord, 300);
 	glTexCoord2f(0, 5);
-	glVertex3f(-300, -2, 300);
+	glVertex3f(-300, lavaYCoord, 300);
 	glEnd();
 	glPopMatrix();
 
@@ -1579,8 +1582,6 @@ void fallPlayer() {
 		playerFallingCoord = 0;
 		playerX = 50;
 		playerY = 0;
-		explorerCameraTP.refresh();
-		explorerCameraFP.resetFP();
 	}
 }
 
@@ -2076,8 +2077,6 @@ void myDisplay1()
 		firstTime = false;
 		playerX = -42.7548 ;
 		playerY = -1.73641;
-		explorerCameraTP.refresh();
-		explorerCameraFP.resetFP();
 	}
 
 	// Draw Ground
@@ -2118,8 +2117,6 @@ void myDisplay1()
 		playerX = 5.0f;
 		playerY = 1.5f;
 		playerFallingCoord = 0.0f;
-		explorerCameraTP.refresh();
-		explorerCameraFP.resetFP();
 		return;
 	}
 
@@ -2135,8 +2132,6 @@ void myDisplay1()
 			playerX = -42.7548;
 			playerY = -1.73641;
 			playerFallingCoord = 0.0f;
-			explorerCameraTP.refresh();
-			explorerCameraFP.resetFP();
 		}
 	}
 
@@ -2170,8 +2165,6 @@ void myDisplay2()
 		firstTime = false;
 		playerX = 50;
 		playerY = 0;
-		explorerCameraTP.refresh();
-		explorerCameraFP.resetFP();
 	}
 
 	followDragonX = playerX - sin(DEG2RAD(cameraPosX - 90));
@@ -2201,8 +2194,6 @@ void myDisplay2()
 		sailingRock = true;
 		playerX = sailingRockX;
 		playerY = sailingRockY;
-		explorerCameraTP.refresh();
-		explorerCameraFP.resetFP();
 	}
 
 	if (!crystalExists[1] && teleport2PosX - teleportWidth <= playerX && playerX <= teleport2PosX + teleportWidth
@@ -2210,8 +2201,6 @@ void myDisplay2()
 		engine->play2D("Sounds/teleport.mp3", false);
 		playerX = -110.698;
 		playerY = 51.3945;
-		explorerCameraTP.refresh();
-		explorerCameraFP.resetFP();
 	}
 
 	if (!crystalExists[0] && !crystalExists[1] && playerX >= -70.5 && playerX <= -69 && playerY >= -34.5 && playerY <= -29)
@@ -2242,8 +2231,6 @@ void myDisplay2()
 		playerX = 50;
 		playerY = 0;
 		playerFallingCoord = 0.0f;
-		explorerCameraTP.refresh();
-		explorerCameraFP.resetFP();
 		isDead = false;
 		sailingRock = false;
 	}
@@ -2383,7 +2370,6 @@ void handleMovement()
 			playerX += moveSpeed * view.x;
 			explorerCameraFP.moveZ(moveSpeed * view.z);
 			explorerCameraFP.moveX(moveSpeed * view.x);
-			explorerCameraTP.refresh();
 		}
 	}
 	else if (moveBackward) {
@@ -2395,7 +2381,6 @@ void handleMovement()
 			playerX -= moveSpeed * view.x;
 			explorerCameraFP.moveZ(-moveSpeed * view.z);
 			explorerCameraFP.moveX(-moveSpeed * view.x);
-			explorerCameraTP.refresh();
 		}
 	}
 	if (moveRight) {
@@ -2407,7 +2392,6 @@ void handleMovement()
 			playerX -= moveSpeed * view.z;
 			explorerCameraFP.moveZ(moveSpeed * view.x);
 			explorerCameraFP.moveX(-moveSpeed * view.z);
-			explorerCameraTP.refresh();
 		}
 	}
 	else if (moveLeft) {
@@ -2419,7 +2403,6 @@ void handleMovement()
 			playerX += moveSpeed * view.z;
 			explorerCameraFP.moveZ(-moveSpeed * view.x);
 			explorerCameraFP.moveX(moveSpeed * view.z);
-			explorerCameraTP.refresh();
 		}
 	}
 }
