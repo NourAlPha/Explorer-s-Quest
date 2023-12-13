@@ -174,8 +174,6 @@ GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
 GLdouble zNear = 0.1;
 GLdouble zFar = 100;
 
-GLfloat lightIntensity[] = { 1, 1, 1, 1.0f };
-GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
 
 class Vector3f
 {
@@ -462,11 +460,29 @@ GLTexture tex_ground, tex_vortex, tex_sea, tex_cave_ground, tex_wallpaper_exit, 
 int wallpaper = 0;
 bool playSound = false, soundPlayed = false;
 
+GLfloat lightPosX = 50.0, lightPosY = -50.0, lightAddX = -0.1, lightAddY = 0.1;
+
 //=======================================================================
 // Animation Function
 //=======================================================================
 
 void Anim(){
+	if (lightPosX > 50) {
+		lightAddX = -0.1;
+	}
+	if (lightPosX < -50) {
+		lightAddX = 0.1;
+	}
+	lightPosX += lightAddX;
+
+	if (lightPosY > 50) {
+		lightAddY = -0.1;
+	}
+	if (lightPosY < -50) {
+		lightAddY = 0.1;
+	}
+	lightPosY += lightAddY;
+
 	cntDragon += 0.3;
 	dragonAngle += 0.3;
 	if (cntDragon > 30) cntDragon = 0;
@@ -502,7 +518,7 @@ void Timer(int value) {
 
 	timer++;
 	
-	if (timer % 20 == 0) {
+	if (timer % 35 == 0 && !firstLevel) {
 		engine->play2D("Sounds/dragon.mp3");
 	}
 
@@ -537,7 +553,26 @@ void InitLightSource()
 
 	// Finally, define light source 0 position in World Space
 	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	//glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+}
+
+void setupLights() {
+
+
+	GLfloat lmodel_ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+
+	GLfloat l0Diffuse[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	GLfloat l0Spec[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+	GLfloat l0Ambient[] = { 0.6f, 0.6f, 0.6f,	1.0f };
+	GLfloat l0Position[] = {lightPosX, 5.0f, lightPosY, true };
+	GLfloat l0Direction[] = { 0.0, 1.0, 0.0 };
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, l0Diffuse);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, l0Ambient);
+	glLightfv(GL_LIGHT0, GL_POSITION, l0Position);
+	//glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90.0);
+	//glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 90.0);
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, l0Direction);
 }
 
 //=======================================================================
@@ -590,7 +625,7 @@ void myInit(void)
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
 	//*******************************************************************************************//
 
-	InitLightSource();
+	//InitLightSource();
 
 	InitMaterial();
 
@@ -2074,15 +2109,22 @@ void drawScore() {
 
 void myDisplay_startMenu() {
 
+	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
+	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+	/*glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);*/
 
 	drawWallpaper();
 
 	glutSwapBuffers();
 }
 void myDisplay_win() {
+
+	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
+	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
+
 	setupCamera2();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
@@ -2092,19 +2134,21 @@ void myDisplay_win() {
 
 	glutSwapBuffers();
 }
+
+
 void myDisplay1()
 {
-	
-	//cout << playerX << " " << playerY << '\n';
-	/*GLfloat lightIntensity[] = { 1,1, 0.9, 1.0f };
-	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };*/
+	setupLights();
+	cout << playerX << " " << playerY << '\n';
+	GLfloat lightIntensity[] = { 0.5,0.5, 0.5, 1.0f };
+	GLfloat lightPosition[] = { lightPosX, 0, 0.0f, 0.0f };
 	setupCamera();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+	//glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	//glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
 	cntTrees = 0;
 	cntGems = 0;
@@ -2140,7 +2184,6 @@ void myDisplay1()
 	RenderSea();
 	drawSky(tex, 300);
 	drawKeys();
-	drawScore();
 
 	handleMovement();
 	checkCollisionGem();
@@ -2276,6 +2319,7 @@ void myDisplay2()
 	glutSwapBuffers();
 
 }
+
 void myDisplay(void)
 {
 	if (startMenu) {
@@ -2320,15 +2364,6 @@ bool checkCollisionTree(float playerX, float playerY) {
 //=======================================================================
 // Function to check collision between the player and statue
 //=======================================================================
-
-bool checkCollisionStatue(float playerX, float playerY) {
-	if (!firstLevel)return false;
-	float distance = sqrt((playerX - 18) * (playerX - 18) + (playerY) * (playerY));
-	if (distance - 0.1 < playerBoundingRadius + objectBoundingRadius) {
-		return true;
-	}
-	return false; // No collision detected
-}
 
 bool checkOkSailing(float x, float y)
 {
@@ -2398,7 +2433,7 @@ void handleMovement()
 	if (moveForward) {
 		if (!checkCollisionTree(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
 			checkOkSailing(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) &&
-			!checkCollisionStatue(playerX + moveSpeed * view.x, playerY + moveSpeed * view.z) && (firstLevel || !firstLevel && !playerIsFalling) &&
+			 (firstLevel || !firstLevel && !playerIsFalling) &&
 			!isPlayerFalling) {
 			playerY += moveSpeed * view.z;
 			playerX += moveSpeed * view.x;
@@ -2409,7 +2444,7 @@ void handleMovement()
 	else if (moveBackward) {
 		if (!checkCollisionTree(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
 			checkOkSailing(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) &&
-			!checkCollisionStatue(playerX - moveSpeed * view.x, playerY - moveSpeed * view.z) && (firstLevel || !firstLevel && !playerIsFalling) &&
+			 (firstLevel || !firstLevel && !playerIsFalling) &&
 			!isPlayerFalling) {
 			playerY -= moveSpeed * view.z;
 			playerX -= moveSpeed * view.x;
@@ -2420,7 +2455,7 @@ void handleMovement()
 	if (moveRight) {
 		if (!checkCollisionTree(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
 			checkOkSailing(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) &&
-			!checkCollisionStatue(playerX - moveSpeed * view.z, playerY + moveSpeed * view.x) && (firstLevel || !firstLevel && !playerIsFalling) &&
+			 (firstLevel || !firstLevel && !playerIsFalling) &&
 			!isPlayerFalling) {
 			playerY += moveSpeed * view.x;
 			playerX -= moveSpeed * view.z;
@@ -2431,7 +2466,7 @@ void handleMovement()
 	else if (moveLeft) {
 		if (!checkCollisionTree(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
 			checkOkSailing(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) &&
-			!checkCollisionStatue(playerX + moveSpeed * view.z, playerY - moveSpeed * view.x) && (firstLevel || !firstLevel && !playerIsFalling) &&
+			(firstLevel || !firstLevel && !playerIsFalling) &&
 			!isPlayerFalling) {
 			playerY -= moveSpeed * view.x;
 			playerX += moveSpeed * view.z;
