@@ -570,8 +570,8 @@ void setupLights() {
 	GLfloat l0Ambient[] = { 0.6f, 0.6f, 0.6f,	1.0f };
 	GLfloat l0Position[] = {lightPosX, 5.0f, lightPosY, true };
 	GLfloat l0Direction[] = { 0.0, 1.0, 0.0 };
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, l0Diffuse);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, l0Ambient);
+	//glLightfv(GL_LIGHT0, GL_DIFFUSE, l0Diffuse);
+	//glLightfv(GL_LIGHT0, GL_AMBIENT, l0Ambient);
 	glLightfv(GL_LIGHT0, GL_POSITION, l0Position);
 	//glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90.0);
 	//glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 90.0);
@@ -2089,17 +2089,9 @@ void drawWallpaperWin() {
 void print(double x, double y, double z, char* string)
 {
 	glPushMatrix();
-	//purple color
-	glScaled(10, 10, 10);
 	int len, i;
-
-	//set the position of the text in the window using the x and y coordinates
 	glRasterPos3d(x, y, z);
-
-	//get the length of the string to display
 	len = (int)strlen(string);
-
-	//loop to display character by character
 	for (i = 0; i < len; i++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
@@ -2110,17 +2102,21 @@ void print(double x, double y, double z, char* string)
 void drawScore() {
 	glPushMatrix();
 	if(isFP)
-		glTranslated(playerX - sin(DEG2RAD(cameraPosX + 180)) * 3, 2, playerY + cos(DEG2RAD(cameraPosY + 180)) * 3);
+		glTranslated(playerX - sin(DEG2RAD(cameraPosX + 180)) * 3, 2.5, playerY + cos(DEG2RAD(cameraPosY + 180)) * 3);
 	else
 		glTranslated(playerX - sin(DEG2RAD(cameraPosX)), 2, playerY + cos(DEG2RAD(cameraPosY)));
 	glRotated(-cameraPosX, 0, 1, 0);
+
 	float PORTAL_WIDTH = 1.743, PORTAL_HEIGHT = 1;
 
 
 	string printedWord = to_string(playerScore);
 	char timerArr[100];
+	glPushMatrix();
+	
 	strcpy(timerArr, printedWord.c_str());
-	print(0, 0, 0.5, timerArr);
+	print(0, 0, 0.01, timerArr);
+	glPopMatrix();
 
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
@@ -2569,7 +2565,7 @@ void myKeyboard(unsigned char button, int x, int y) {
 		case 'a':
 			moveLeft = true;
 			break;
-		case 'z':
+		case 9:
 			isScoreScreenOn = true;
 			break;
 		case 'x':
@@ -2624,7 +2620,7 @@ void myKeyboardUp(unsigned char button, int x, int y) {
 	case 'a':
 		moveLeft = false;
 		break;
-	case 'z':
+	case 9:
 		isScoreScreenOn = false;
 		break;
 	default:
