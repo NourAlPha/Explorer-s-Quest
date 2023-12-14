@@ -3,7 +3,7 @@
 Explorer's Quest is a 3D running game that consists of 2 different levels developed using Opengl/glut C++.
 
 ## Main menu
-Select one of the options using arrow keysز
+Select one of the options using arrow keys.
 
 ## Game Levels 
 ### Level 1
@@ -17,7 +17,7 @@ The player is dropped into an island in which he is required to collect gemstone
 ### Level 2
 The player is teleported into the underworld where he needs to avoid falling into the lava and he needs also to collect two diamonds that opens a portal to finally escape the game world and win the game. Collecting the first diamond opens a portal to cave with falling pillars, which has the final diamond which also opens a portal that takes the player back to the previous location.
 - **Collectables** : Coins and Diamonds
-- **Obstacles** : Falling pillars that the player should avoid.
+- **Obstacles** : Falling pillars that the player should avoid
 
 ![Screenshot (161)](https://github.com/NourAlPha/Explorer-s-Quest/assets/49641430/cc76e6ea-9020-48a3-a249-eeb240dc6cf6)
 
